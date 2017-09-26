@@ -1,0 +1,141 @@
+<style>
+	#retention-input input {
+		width: auto;
+	}
+</style>
+<template type="text/ng-template" id="realizedIXP">
+	<div id="retention-input">
+		von <input type="date" name="fromDate" ng-model="fromDate">
+		bis <input type="date" name="toDate" ng-model="toDate">
+		<span ng-click="reload()" class="btn">reload</span>
+
+	</div>
+	<div id="retention-table">
+		<table>
+			<tr>
+				<th>LC</th>
+				<th>Name</th>
+				<th>Mail</th>
+				<th>Program</th>
+				<th>Field of Study</th>
+				<th>When</th>
+				<th>Where</th>
+			</tr>
+			<tr ng-repeat="row in rows | filter:filterByStartdate | orderBy:'lc'">
+				<td>{{row.lc}}</td>
+				<td>{{row.name}}</td>
+				<td>{{row.mail}}</td>
+				<td>{{row.program}}</td>
+				<td>{{row.fieldOfStudy}}</td>
+				<td>{{row.range}}</td>
+				<td>{{row.where}}</td>
+			</tr>
+		</table>
+	</div>
+</template>
+<script>
+(function(tim, $){
+	var noob = tim.helper.get('noob'),
+			expa = tim.helper.get('expa'),
+			time = tim.helper.get('time');
+			fromDate = new Date(),
+			toDate = new Date();
+		fromDate.setDate(fromDate.getDate() - 90);
+
+
+		var controller = function($scope, $stateParams, User) {
+			$scope.fromDate = fromDate;
+			$scope.toDate = toDate;
+			var filterFromDate = fromDate;
+			var filterToDate = toDate;
+			var filterNoData = new Date(0);
+			$scope.rows = processIXP();
+			
+			$scope.filterByStartdate = function (row) {
+				if((row.startDate > filterFromDate && row.startDate < filterToDate) || (row.startDate.toUTCString() == filterNoData.toUTCString())) {
+					return true;
+				}
+				else return false;
+			}
+
+			function processIXP () {
+				var rows = [];
+
+				var filter = {}; //empty Object, will be used for the national overview, where no filters are needed
+
+				if ($stateParams.id != 1596) {
+					filter.lcId = $stateParams.id;
+				}
+
+				noob.get('ixp/realized', filter).then(function(data){
+
+					$.each(data,function(index, ixp){
+						rows[index] = {
+							lc: expa.getCommitteeById(ixp.committeeId),
+							name: '-',
+							mail: '-',
+							program: '-',
+							fieldOfStudy: '-',
+							range:  '-',
+							where: '-',
+							startDate: new Date(0) //used to filter array
+						}; 
+
+						expa.get('people/' + ixp.memberId + '.json').then(function(expadata){
+							//rows[index].lc = expadata.home_lc.name;
+							rows[index].name = expadata.full_name;
+							rows[index].mail = expadata.email;
+						});
+
+						noob.get('people/' + ixp.memberId + '/applicationInformation').then(function(applicationInfo) {
+							
+							rows[index].fieldOfStudy = applicationInfo.fieldOfStudy;
+						});
+
+						noob.get('exchanges/' + ixp.exchangeId).then(function(exchangedata){
+							if(!exchangedata.applicationID) return;
+							
+							expa.get('applications/' + exchangedata.applicationID + '.json').then(function(expadata){
+								rows[index].program = expadata.opportunity.programmes.short_name;
+								rows[index].where = expadata.opportunity.location;
+
+								if(expadata.experience_start_date && expadata.experience_end_date) {
+									var startDate = new Date(expadata.experience_start_date); 
+									var endDate = new Date(expadata.experience_end_date);
+									rows[index].startDate = startDate;
+									rows[index].range = startDate.toLocaleDateString() + ' - ' + endDate.toLocaleDateString();
+								}
+							});
+						});	
+					});
+					
+
+				});
+
+				return rows;
+			};
+
+			$scope.reload = function(){
+				filterFromDate = $scope.fromDate;
+				filterToDate = $scope.toDate;
+			}; 
+			
+		};
+
+   var newState = {
+			state: 'committee.analytics.realizedIXP',
+            config: {
+                url: '/realizedIXP',
+                views: {
+                	'analytics': {
+                		templateUrl: 'realizedIXP',
+                		controller: controller
+                	}
+                }
+            }
+		};
+
+		tim.addState(newState);
+	
+})(aigTim, jQuery);
+</script>

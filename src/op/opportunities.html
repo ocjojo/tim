@@ -1,0 +1,45 @@
+<template id="links-in-new-window-button">
+	<a class="ai-op-quality">
+		<ul>
+			<li class="content">
+				<p class="pad-left pad-right">
+					<span>Open links in new window</span>
+				</p>
+			</li>
+		</ul>
+	</a>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+
+		function main() {
+			tim.find('[ng-show="vm.opportunity.specifics_info.expected_work_schedule.from && vm.opportunity.specifics_info.expected_work_schedule.to"]').then(function(opportunity){
+				var scope = angular.element(opportunity).scope();
+
+				tim.wait(scope.vm, "opportunity").then(function(){
+					var opportunity = angular.element($('ul.tabs')).scope().vm.opportunity;
+		      var duration = opportunity.duration;
+		      $(".content ul li p.ng-binding").eq(2)[0].innerHTML = '<span class="icon-clock"></span>For ' + duration + ' weeks';
+					var selection = opportunity.role_info.selection_process;
+					var selection_headline = "Selection Process";
+					$('article').append($('<p ng-show="vm.opportunity.selection_process" class="selection-headline ng-binding"><span>'+ selection_headline +'</span><br><p id="selection"></p'));
+					$("#selection").text(selection);
+					var activities = opportunity.role_info.learning_points_list;
+		      var activities_headline = "Main Activities";
+					$('article').append($('<p ng-show="vm.opportunity.selection_process" class="activities-headline ng-binding"><span>'+ activities_headline +'</span><br><p id="activities"></p>'));
+					$("#activities").text(activities);
+					$(".selection-headline").eq(1).remove();
+					$(".activities-headline").eq(1).remove();
+				});
+			});
+		}
+
+		tim.script.add({
+			name: "Adds Opportunity Info",
+			route: "https://aiesec.org/opportunity/.*",
+			script: main
+		});
+
+	})(aigTim, jQuery);
+</script>

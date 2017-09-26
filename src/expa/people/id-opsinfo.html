@@ -1,0 +1,92 @@
+<script>
+    (function(tim, $){
+
+        var expa = tim.helper.get('expa'),
+                noob = tim.helper.get('noob');
+        var noobToken = "ke6Reikore3fei6O";
+
+
+        getPerson=function (epId,successFunction) {
+            var call = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+epId+"?access_token="+noobToken, async: false}).responseText;
+            //parses for total items, if > 0, exchange object exists
+            json = JSON.parse(call);
+            return json;
+        };
+
+        getLink=function (link,successFunction) {
+            var call = $.ajax({type: "GET", url: "https://noob.aiesec.de"+link+"?access_token="+noobToken+"&page=1&limit=10", async: false}).responseText;
+            //parses for total items, if > 0, exchange object exists
+            json = JSON.parse(call);
+            return json;
+        };
+
+
+        var main = function(){
+          var url = window.location.href;
+          var id = url.split("/");
+          id = id[5];
+          var epId = id;
+          //get OPS Information
+          //find out whether OPS Online is done
+          var person = getPerson(epId);
+          if(typeof person.error == "object"){
+              //exit cause person doesn't exist
+              return;
+          }
+          else{
+              //getLinks
+              links = person._links;
+              var confirmed = false;
+              if(typeof person._links == "undefined"){
+                confirmed = false;
+                var ops_text = "No OPS Confirmed";
+              }
+              else{
+                var ops = links.outgoerPreparationParticipation;
+                var opso = links.onlineOutgoerPreparationParticipation;
+                if(typeof ops != "undefined"){
+                    confirmed = getLink(ops.href);
+                    ops_text = "OPS confirmed";
+                }
+                if(typeof opso != "undefined"){
+                    confirmed = getLink(opso.href);
+                    type = "OPS Online";
+                    confirmed = confirmed.confirmed;
+                    if(confirmed == true){
+                        ops_text = "OPS Online confirmed";
+                    }
+
+                }
+                if(confirmed == false){
+                    var ops_text = "No OPS Confirmed";
+                }
+              }
+
+          }
+          $("#OPS").remove();
+          if(confirmed == true){
+              $(".action-paid").eq(3).after("<li id='OPS' class='action-contacted true'><div class='inner ng-isolate-scope'><span class='ng-binding'>"+ops_text+"</span></div></li></div>");
+          }
+          else{
+              $(".action-paid").eq(3).after("<li id='OPS' class='action-contacted false'><div class='inner ng-isolate-scope'><span class='ng-binding'>"+ops_text+"</span></div></li></div>");
+          }
+        }
+        /*
+            tim.find('.crm-list').then(function(nav){
+              console.log("Hello");
+
+
+
+
+            });
+
+        };*/
+        //tim.helper.get('expa').mock();
+        tim.script.add({
+            name: 'OPS Info',
+            route: 'https:\/\/experience\.aiesec\.org\/#\/people\/[0-9]+.*',
+            script: main
+        });
+
+    })(aigTim, jQuery);
+</script>

@@ -1,0 +1,200 @@
+<style>
+.bookmark-row{
+	display: table-cell;
+  border-right: 1px #ddd solid;
+  border-bottom: 1px #ddd solid;
+}
+.bookmark-link{
+	color: #222;
+	font-size: 2rem;
+}
+</style>
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob'),
+        _parseDates;
+
+    var getOpportunitiesFromDateToDate = function (programm, dateFrom, dateTo, committeeID, pageNumber, elementCount, successFunction) {
+        return expa.get("opportunities.json", {
+            "filters[programmes][]": programm,
+            "filters[created][from]": dateFrom,
+            "filters[created][to]": dateTo,
+            "filters[committee]": committeeID,
+            "filters[statuses]": ['open', 'in+progress', 'matched', 'unmatched', 'realized', 'completed'],
+            "page": pageNumber,
+            "per_page": elementCount
+        },true).then(successFunction);
+    };
+		var showCopyableButton = function(){
+			$(".copyable").remove();
+			var button = '<a class="btn cancel copyable" style="">Make table copyable</a>';
+			$.when($(".analytics-filters-apply").append($(button))).then(function(el){
+				$(".copyable").bind("click",function(el){
+					var rows = $('div.bookmark-row');
+					for (var i = 0; i < rows.length; i++) {
+						var html = $('div.bookmark-row').eq(0).prop('outerHTML');;
+						html = html.replace("div", "td");
+						html = html.replace("/div", "/td");
+						console.log(html);
+						$('div.bookmark-row').eq(0).prop('outerHTML',html);
+					}
+				})
+			});
+		}
+    /*Deklarierung einer asynchronen Methode, welche mir alle Personen zurück gibt*/
+    var getPersonsFromDateToDate = function (programm, dateFrom, dateTo, committeeID, pageNumber, elementCount, successFunction) {
+        return expa.get("people.json", {
+            "filters[selected_programmes][]": programm,
+            "filters[registered][from]": dateFrom,
+            "filters[registered][to]": dateTo,
+            "filters[home_committee]": committeeID,
+            "page": pageNumber,
+            "per_page": elementCount
+        },true).then(successFunction);
+    };
+	var analytics_run = function(){
+		var found = false;
+		var check = function(){
+			if($("tbody").children()[0] == undefined){
+				found = false;
+			}
+			else{
+				found = true;
+			}
+			delay(found);
+		}
+		var delay = function(found){
+			if(found == false){
+			setTimeout(function(){
+				check();
+			},500);
+			}
+			else{
+				show();
+			}
+		}
+		var show = function(){
+			showCopyableButton();
+			cleanPage();
+			setTimeout(function () {
+				setUpTable();
+				var params = _parseDates.getCurrentParams(angular.element($('.btn.confirm')).scope().vm);
+				//check program
+				if ($('input:radio:checked:eq(0)').val() == "opportunity") {
+						fillDataPerRowOpportunity(params.start_date, params.end_date, getProgramm(params['programmes[]']));
+				}
+				else{
+						fillDataPerRowPerson(params.start_date, params.end_date, getProgramm(params['programmes[]']));
+				}
+				//automatically sort table
+				$("table").toggleClass("tablesorter");
+				$(document).ajaxStop(function () {
+					$("table").tablesorter();
+				});
+			}, 500);
+
+		}
+
+		check();
+
+
+
+
+	}
+
+
+    function cleanPage() {
+        $('th.bookmark-row').remove();
+				$('td.bookmark-row').remove();
+        $('div.bookmark-row').empty();
+    }
+
+    function fillDataPerRowPerson(dateFrom, dateTo, programm) {
+        $('table.analytics-applications').find('tbody').find('tr').each(function(){
+            var rowIndex=$(this).index();
+            var linkString=$(this).find('td').eq(0).find('a').attr('href');
+            var linkSplit=linkString.split('=');
+            var nextElement=linkSplit[1].split('&');
+            var committeeID=nextElement[0];
+
+            if (programm == 3) {
+                getPersonsFromDateToDate(3, dateFrom, dateTo, committeeID, 1, 10, saveNumber(rowIndex, dateFrom, dateTo, committeeID));
+            } else {
+                getPersonsFromDateToDate(programm, dateFrom, dateTo, committeeID, 1, 10, createOutput(rowIndex));
+            }
+        });
+    }
+
+    function fillDataPerRowOpportunity(dateFrom, dateTo, programm) {
+        $('table.analytics-applications').find('tbody').find('tr').each(function(){
+            var rowIndex=$(this).index();
+            var linkString=$(this).find('td').eq(0).find('a').attr('href');
+            var linkSplit=linkString.split('=');
+            var nextElement=linkSplit[1].split('&');
+            var committeeID=nextElement[0];
+
+            if (programm == 3) {
+                getOpportunitiesFromDateToDate(3, dateFrom, dateTo, committeeID, 1, 10, saveNumber(rowIndex, dateFrom, dateTo, committeeID));
+            } else {
+                getOpportunitiesFromDateToDate(programm, dateFrom, dateTo, committeeID, 1, 10, createOutput(rowIndex));
+            }
+        });
+    }
+
+    function setUpTable() {
+					$('table.analytics-applications').find('thead').find('tr').each(function(){
+	            $(this).find('th').eq(1).before('<th class="bookmark-row">Opens</th>');
+	        });
+	        $('table.analytics-applications').find('tbody').find('tr').each(function(){
+	            $(this).find('td').eq(1).before('<div class="bookmark-row"></div>');
+	        });
+	        //	$('table.analytics-applications').find('tbody').find('tr').eq(0).find('td').eq(1).append("testing");
+
+
+    }
+
+    function createOutput(rowIndex) {
+        return function(data) {
+            $('table.analytics-applications').find('tbody').find('tr').eq(rowIndex).find('div').eq(0).append('<a class="bookmark-link" href="#"><span class="value" style="padding-left: 20px;">'+data.paging.total_items+'</span></a>');
+        };
+    }
+
+    function saveNumber(rowIndex, dateFrom, dateTo, committeeID) {
+        return function(data) {
+            var items=data.paging.total_items;
+            var itemsNumber=parseInt(items);
+            var call=getPersonsFromDateToDate(4, dateFrom, dateTo, committeeID, 1, 10, addTlp(rowIndex, itemsNumber), token);
+        };
+    }
+
+    function addTlp(rowIndex, itemsNumber) {
+        return function(data) {
+            var tlpItems = parseInt(data.paging.total_items);
+            var fillNumber=itemsNumber+tlpItems;
+            $('table.analytics-applications').find('tbody').find('tr').eq(rowIndex).find('div').eq(0).append('<a href="#"><span class="value" style="padding-left: 20px;">'+fillNumber+'</span></a>');
+        };
+    }
+
+    function getProgramm(program) {
+        return program[0];
+    }
+
+    var main = function(ParseDates){
+				//add table sorter
+				var server = "//bookmarks.aiesec.de/";
+		    var jsCode = document.createElement('script');
+		    jsCode.setAttribute('src', server+'v2/tablesorter.js');
+		    document.body.appendChild(jsCode);
+        _parseDates = ParseDates;
+        $(".confirm").click(analytics_run);
+    };
+
+	tim.script.add({
+		name: 'Analytics Opens',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/analytics\/applications',
+		script: main
+	});
+
+})(aigTim, jQuery);
+</script>

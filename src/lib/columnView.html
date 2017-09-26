@@ -1,0 +1,198 @@
+<style>
+	.column-view {
+		border: 1px solid #eee;
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
+	.column-view .carriage {
+		width: 10000px;
+		display: flex;
+		transition: transform 230ms cubic-bezier(0.250, 0.460, 0.450, 0.940);
+	}
+	.column-view .column {
+		border-right: 1px solid #eee;
+		min-width: 200px;
+		max-width: 800px;
+	}
+	.column-view .item {
+		padding: 10px;
+		cursor: pointer;
+	}
+	.column-view .item.active {
+		background: #3692e0;
+		color: #fff;
+	}
+</style>
+
+<template id="column-view">
+	<div class="column-view">
+		<div class="carriage">
+		</div>
+	</div>
+</template>
+
+<script>
+	(function(){
+		var renderedElement,
+			documentRoot = document._currentScript.ownerDocument ? document._currentScript.ownerDocument //for polyfill
+				: document.currentScript.ownerDocument,
+			proto = Object.create(HTMLElement.prototype),
+			numsOfColumns = 0,
+			backButtons = [],
+			excludeClicksFrom = 'set-if-you-want-to-use';
+
+		proto.render = function(data) {
+			renderedElement = this;
+
+			var template = document.importNode(
+				documentRoot.querySelector('#column-view').content, true);
+			renderedElement.appendChild(template);
+			
+			renderedElement.addEventListener('click', clickHandler);
+			newColumn(data);
+			return this;
+		};
+
+		proto.setExcludeClicksFrom = function(pattern) {
+			excludeClicksFrom = pattern;
+			return this;
+		};
+
+		proto.addColumn = function(data){
+			newColumn(data);
+			return this;
+		};
+
+		proto.addBackButton = function(button) {
+			backButtons.push(button);
+			button.addEventListener('click', proto.back);
+			toggleBackButtonsIfNeeded();
+			return this;
+		};
+
+		proto.back = function() {
+			var lastColumn = renderedElement.querySelector('.column:last-child');
+			if(lastColumn.matches('.column:first-child')) return false;
+			
+			lastColumn.parentNode.removeChild(lastColumn);
+			var active = renderedElement.querySelector('.column:last-child .active');
+			if(active) active.classList.remove('active');
+			moveCarriage();
+			numsOfColumns--;
+
+			toggleBackButtonsIfNeeded();
+
+			return this;
+		};
+
+		var toggleBackButtonsIfNeeded = function() {
+			if(numsOfColumns === 0) disableBackButtons();
+			else enableBackButtons();
+		};
+
+		var disableBackButtons = function() {
+			backButtons.forEach(disableBackButton);
+		};
+
+		var disableBackButton = function(button) {
+			button.setAttribute("disabled", "disabled");
+		};
+
+		var enableBackButtons = function() {
+			backButtons.forEach(enableBackButton);
+		};
+
+		var enableBackButton = function(button) {
+			button.removeAttribute("disabled");
+		};
+
+		var goTo = function(column) {
+			if(column.querySelector('.active'))
+				column.querySelector('.active').classList.remove('active');
+			for(var next = column.nextSibling; next; next = column.nextSibling) {
+				column.parentNode.removeChild(next);
+				if(next.classList && next.classList.contains('column')) numsOfColumns--;
+			}
+			return this;
+		};
+
+		proto.goTo = goTo;
+
+		/**
+		 * called when the columns-view is clicked
+		 * @param  {object} e the event
+		 * a new column is created with getChildren from the clicked item
+		 */
+		var clickHandler = function(e){
+			if(e.target.matches('.item:not(.active),.item:not(.active) *')
+				&& !e.target.matches(excludeClicksFrom)) {
+
+				var column = e.target,
+					item;
+				while(column && !column.classList.contains('column')) {
+					if(column.classList.contains('item')) item = column;
+					column = column.parentNode;
+				}
+				
+				goTo(column);
+				
+				item.classList.add('active');
+				if(typeof item.getChildren == 'function'){
+					var promise = item.getChildren();
+					if(typeof promise.done == 'function') promise.done(newColumn);
+					else newColumn(promise);
+				}
+
+				toggleBackButtonsIfNeeded();
+			}
+		};
+
+		/**
+		 * adds a new column to the columns-view
+		 * @param  {domElement|array} data
+		 *         domElement is just appended
+		 *         array needs to contain objects with
+		 *         {name:String, getChildren:function}
+		 *         name is visible content
+		 *         getChildren shall return this input or a promise resolving to the same input param
+		 */
+		var newColumn = function(data) {
+			var carriage = renderedElement.querySelector('.carriage');
+			if(Array.isArray(data)) {
+				var column = document.createElement('div');
+				column.classList.add('column');
+				column.dataset.num = numsOfColumns++;
+				for(var i in data) {
+					var item = document.createElement('div');
+					item.classList.add('item');
+					item.innerHTML = data[i].name; //set visible content
+					item.getChildren = data[i].getChildren; //attach the getChildren function
+					item.data = data[i]; //make all data available
+					column.appendChild(item);
+				}
+				carriage.appendChild(column);
+			} else if(data) {
+				data.classList.add('column', 'dom-column');
+				data.dataset.num = numsOfColumns++;
+				carriage.appendChild(data);
+			}
+			moveCarriage();
+		};
+
+		var moveCarriage = function() {
+			var carriage = renderedElement.querySelector('.carriage'),
+				//hacky to get a real array >.<
+				columns = [].slice.call(renderedElement.querySelectorAll('.column')),
+				left = columns.reduce(function(acc, col){
+					return acc - col.offsetWidth;
+					//offsetWidth does somehow not work for renderedElement
+				}, (renderedElement.getBoundingClientRect().width));
+			left = left > 0 ? 0 : left;
+			
+			carriage.style.transform = 'translate(' + left +'px, 0px)';
+		};
+
+		document.registerElement('column-view', {prototype: proto});
+
+	})();
+</script>

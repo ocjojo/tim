@@ -1,0 +1,786 @@
+<style>
+    .follow-up-table tr {
+        font-size: 9pt;
+    }
+    .emptyExchange{
+        padding: 20px 15px;
+        position:relative;
+        border-bottom: 1px #ddd solid;
+        width: 100%;
+        display: table;
+    }
+    .sands-wrapper{
+        padding-left:50px;
+    }
+    .button-wrapper{
+        padding-top:50px;
+    }
+    .feedback-wrapper{
+        padding-left:50px;
+    }
+    .expand{
+        cursor: pointer;
+    }
+    .exchangeObject-wrapper{
+      margin-top: -50px!important;
+      margin-left: 10px;
+    }
+</style>
+<template id="emptyExchange">
+    <div class="general align-left">
+        <div class="general-inner">
+            <div class="general">
+                <a class="name">
+                    Exchange #{{ data[0].exchangeId }}
+                </a>
+            </div>
+        </div>
+    </div>
+</template>
+<template id="timeline">
+    <div class="overflow-wrapper">
+        <div class="timeline">
+            <h2>Timeline</h2>
+            <ul class="statuses-list" style="width:300px;">
+                <li class="ng-scope {{ data[0].statusApplied }}">
+                    <span>Applied</span>
+                    <span class="status-date">{{ data[0].dateApplied | date:'HH:mm dd MMM yyyy'}}</span>
+                </li>
+                <li class="ng-scope {{ data[0].statusAN }}">
+                    <span>AN</span>
+                    <span class="status-date">{{ data[0].dateAN | date:'HH:mm dd MMM yyyy'}}</span>
+
+                </li>
+                <li class="ng-scope {{ data[0].statusAGB }}">
+                    <span>AGB</span>
+                    <span class="status-date">{{ data[0].dateAGB | date:'HH:mm dd MMM yyyy'}}</span>
+                </li>
+                <li class="ng-scope {{ data[0].statusApproved }}">
+                    <span>Legal Match</span>
+                    <span class="status-date">{{ data[0].dateApproved | date:'HH:mm dd MMM yyyy'}}</span>
+                </li>
+                <li class="ng-scope {{ data[0].statusFlight }}">
+                    <span>Flight Date</span>
+                    <span class="status-date">{{ data[0].flightDate | date:'HH:mm dd MMM yyyy'}}</span>
+                </li>
+                <li class="ng-scope {{ data[0].statusRealized }}">
+                    <span>Realized</span>
+                    <span class="status-date">{{ data[0].dateRealized | date:'HH:mm dd MMM yyyy'}}</span>
+                </li>
+                <li class="ng-scope {{ data[0].statusReturn }}">
+                    <span>Return Date</span>
+                    <span class="status-date">{{ data[0].returnDate | date:'HH:mm dd MMM yyyy'}}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+<template id="feedback">
+    <div class="feedback-wrapper">
+        <div class="timeline">
+            <div>
+                <h2>Feedback</h2>
+            </div>
+            <div id="feedbackText">
+                {{data[0]}}
+            </div>
+        </div>
+    </div>
+</template>
+<template id="exchangeObject">
+    <div class="button-wrapper">
+        <div class="timeline">
+			<div>
+				<h2>Exchange Object:</h2>
+			</div>
+            <div id="exchangeObjectDescription">
+                {{data[0].description}}
+            </div>
+            <div id="exchangeObjectButton">
+                <br>
+                <strong id='{{data[0].appId}}' class='status' style='color:{{data[0].buttonColor}};display:{{data[0].hideField}};border-color:{{data[0].buttonColor}};font-weight: bold;'>{{data[0].buttonDescription}}</strong><br>
+			</div>
+        </div>
+    </div>
+</template>
+<template id="sands">
+    <div class="overflow-wrapper">
+        <div class="timeline">
+            <h2>Standards</h2>
+            <ul class="statuses-list" style="width:300px;">
+                <li class="ng-scope {{ data[0].visaWorkPermit }}">
+                    <span>Visa and Work Permit</span>
+                </li>
+                <li class="ng-scope {{ data[0].arrivalPickup }}">
+                    <span>Arrival Pickup</span>
+                </li>
+                <li class="ng-scope {{ data[0].departureSupport }}">
+                    <span>Departure Support</span>
+                <li class="ng-scope {{ data[0].jobDescription }}">
+                    <span>Job Description</span>
+                </li>
+                <li class="ng-scope {{ data[0].duration }}">
+                    <span>Duration</span>
+                </li>
+                <li class="ng-scope {{ data[0].workingHours }}">
+                    <span>Working Hour</span>
+                </li>
+                <li class="ng-scope {{ data[0].firstDayOfWork }}">
+                    <span>First Day of Work</span>
+                </li>
+                <li class="ng-scope {{ data[0].individualGoals }}">
+                    <span>Individual Goals</span>
+                </li>
+                <li class="ng-scope {{ data[0].insurance }}">
+                    <span>Insurance</span>
+                </li>
+                <li class="ng-scope {{ data[0].accomodation }}">
+                    <span>Accommodation</span>
+                </li>
+                <li class="ng-scope {{ data[0].livingCosts }}">
+                    <span>Basic Living Costs</span>
+                </li>
+                <li class="ng-scope {{ data[0].purpose }}">
+                    <span>AIESEC Purpose</span>
+                </li>
+                <li class="ng-scope {{ data[0].expectationSetting }}">
+                    <span>Expactation Setting</span>
+                </li>
+                <li class="ng-scope {{ data[0].preparation }}">
+                    <span>Preparation</span>
+                </li>
+                <li class="ng-scope {{ data[0].hostFacilitatedLearning }}">
+                    <span>Host Facilitated Learning</span>
+                </li>
+                <li class="ng-scope {{ data[0].homeFacilitatedLearning }}">
+                    <span>Home Facilitated Learning</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+</template>
+<script>
+    (function(tim, $){
+
+        var expa = tim.helper.get('expa'),
+                noob = tim.helper.get('noob');
+        var noobToken = "ke6Reikore3fei6O";
+        getEpId = function(){
+            var url = window.location.href;
+            var url = url.split("/");
+            var epId = url[5];
+            return (epId);
+        };
+        getsAndS=function (epId,appId) {
+            var exchange = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+epId+"/exchanges?access_token="+noobToken+"&applicationID="+appId, async: false}).responseText;
+            exchange = JSON.parse(exchange);
+            if(exchange.totalItems == 0){
+                //give empty sAndS
+                var sAndS = {};
+                sAndS.visaWorkPermit = false; sAndS.arrivalPickup = false; sAndS.departureSupport = false; sAndS.jobDescription = false; sAndS.duration = false; sAndS.workingHours = false; sAndS.firstDayOfWork = false; sAndS.individualGoals = false; sAndS.insurance = false; sAndS.accomodation = false; sAndS.livingCosts = false; sAndS.purpose = false; sAndS.expectationSetting = false; sAndS.preparation = false; sAndS.hostFacilitatedLearning = false; sAndS.homeFacilitatedLearning = false;
+                return sAndS;
+            }
+            else{
+                var exchangeId = exchange.payload[0].id;
+                var sAndS = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+epId+"/exchanges/"+exchangeId+"/standardsAndSatisfaction?access_token="+noobToken, async: false}).responseText;
+                return JSON.parse(sAndS);
+            }
+        };
+        getAGB = function(epId,appId){
+            var exchange = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+epId+"/exchanges?access_token="+noobToken+"&applicationID="+appId, async: false}).responseText;
+            exchange = JSON.parse(exchange);
+            var payload = exchange.payload[0];
+            if(typeof payload == "undefined" || typeof payload._links.agbAgreement == "undefined"){
+                //exchange object does't exist or agb object doesnt exist
+                return agb = { dateSigned: ""};
+            }
+            var agbAgreement = payload._links.agbAgreement.href;
+            var agb = getLink(agbAgreement);
+            return agb;
+
+        };
+
+        getPerson=function (epId,successFunction) {
+            var call = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+epId+"?access_token="+noobToken, async: false}).responseText;
+            //parses for total items, if > 0, exchange object exists
+            var json = JSON.parse(call);
+            return json;
+        };
+        createPerson = function(epId){
+            //get email
+            var email = angular.element($('.profile-header')).scope().vm.person.email;
+            var body = {
+                'id': epId,
+                'email':email,
+                'leadSource':"ops",
+            };
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = false;
+
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                }
+            });
+
+            xhr.open("POST", "https://noob.aiesec.de/people?access_token="+noobToken);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+
+            xhr.send(JSON.stringify(body));
+            location.reload();
+        };
+        getExchanges = function (epId,successFunction) {
+            var call = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+epId+"/exchanges?access_token="+noobToken+"&applicationID=&page=1&limit=10", async: false}).responseText;
+            //parses for total items, if > 0, exchange object exists
+            var json = JSON.parse(call);
+            if(json.error && json.error.code == 404){
+              createPerson(epId);
+            }
+            else{
+              return json;
+            }
+        };
+        getExchange = function (ep_id,app_id,successFunction) {
+            var call = $.ajax({type: "GET", url: "https://noob.aiesec.de/people/"+ep_id+"/exchanges?access_token="+noobToken+"&applicationID="+app_id+"&page=1&limit=1", async: false}).responseText;
+            //parses for total items, if > 0, exchange object exists
+            var json = JSON.parse(call);
+            return json;
+        }
+
+        getLink=function (link,successFunction) {
+            var call = $.ajax({type: "GET", url: "https://noob.aiesec.de"+link+"?access_token="+noobToken+"&page=1&limit=10", async: false}).responseText;
+            //parses for total items, if > 0, exchange object exists
+            var json = JSON.parse(call);
+            return json;
+        };
+
+        var addSandS = function(index,application) {
+            //unfortunately I am too stupid to add SandS into the helper :(
+            var appId = application.id;
+            var epId = getEpId();
+            var sAndS = getsAndS(epId,appId);
+            var data = {};
+            for (var key in sAndS) {
+                if (sAndS[key] == true) {
+                    data[key] = "done";
+                }
+                else {
+                    data[key] = "";
+                }
+            }
+            var template = tim.template.get('#sands').compile();
+            var entries = [];
+            template.scope.data = entries;
+            $('.sands-wrapper').eq(index).append($(template));
+            entries.push(data);
+            //add feedback
+            var template = tim.template.get('#feedback').compile();
+            var entries = [];
+            template.scope.data = entries;
+            $('.feedback-wrapper').eq(index).append($(template));
+            entries.push(sAndS.comments);
+        };
+        var addTimeline = function(index,data) {
+            var template = tim.template.get('#timeline').compile();
+            var entries = [];
+            template.scope.data = entries;
+            $('.timeline-wrapper').eq(index).append($(template));
+            entries.push(data);
+        };
+        var addExchangeDescription = function(description,index,action,appId){
+            if(action == "delete"){
+                buttonDescription = "Delete";
+                buttonColor = "#f66";
+                hideField = " ";
+            }
+            else if(action == "create"){
+                buttonDescription = "Create";
+                buttonColor = "#393";
+                hideField = " ";
+            }
+            else{
+                buttonDescription = "";
+                buttonColor = "";
+                hideField = "none";
+            }
+
+            var template = tim.template.get('#exchangeObject').compile();
+            var data = {
+                description: description,
+                buttonDescription: buttonDescription,
+                buttonColor: buttonColor,
+                hideField: hideField,
+                appId: appId,
+            };
+            var entries = [];
+            template.scope.data = entries;
+            $('.exchangeObject-wrapper').eq(index).append($(template));
+            entries.push(data);
+            //buttonAction!!!
+            //check if element exists, timeout because it takes until the element exists
+            setTimeout(function(){
+                $('#'+appId).click(function(){
+                    if(action == "create"){
+                        createExchangeObject(appId);
+                    }
+                    else if(action == "delete"){
+                        deleteExchangeObject(appId);
+                    }
+                });
+            }, 500);
+        };
+        var createExchangeObject = function(appId) {
+            var body = {
+                'applicationID': appId,
+            };
+            var epId = getEpId();
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = false;
+
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                }
+            });
+
+            xhr.open("POST", "https://noob.aiesec.de/people/" + epId + "/exchanges?access_token=" + noobToken);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(body));
+            //create application object, to pass it to addCreateExchange
+            var application = getApplicationByAppId(appId);
+            $(".application").eq(application).find(".button-wrapper").remove();
+            application = angular.element(jQuery('ul.list')).scope().vm.applications[application];
+            setTimeout(function(){
+                addCreateExchange(application);
+            }, 300);
+        };
+        var deleteExchangeObject = function(appId){
+            //Getting Exchange ID
+            var epId = getEpId();
+            var call = getExchange(epId,appId);
+            var exchangeID = call.payload;
+            exchangeID = exchangeID[0];
+            exchangeID = exchangeID.id;
+            //sending the request
+            var body = {};
+            var xhr = new XMLHttpRequest();
+            xhr.withCredentials = false;
+            xhr.addEventListener("readystatechange", function () {
+                if (this.readyState === 4) {
+                }
+            });
+            xhr.open("DELETE", "https://noob.aiesec.de/people/"+epId+"/exchanges/"+exchangeID+"?access_token="+noobToken);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.send(JSON.stringify(body));
+            //create application object, to pass it to addCreateExchange
+            var application = getApplicationByAppId(appId);
+            $(".application").eq(application).find(".button-wrapper").remove();
+            application = angular.element(jQuery('ul.list')).scope().vm.applications[application];
+            setTimeout(function(){
+                addCreateExchange(application);
+            }, 300);
+        };
+        var addCreateExchange = function(application) {
+            //get ep id
+            var epId = getEpId();
+            var appId = application.id;
+            //get index
+            var index = getApplicationByAppId(appId);
+            //check program
+            var opp = application.opportunity;
+            var programm = opp.programmes.short_name;
+
+            if (programm == "aTMP" || programm == "aTLP") {
+            }
+            else {
+                //check status
+                var status = app.current_status;
+                if (status == "rejected" || status == "open") {
+                    addExchangeDescription("Exchange is not matched - can't create!",index);
+                }
+                else {
+                    //check if person exisits in NOOB
+                    var person = getPerson(epId);
+                    //if error exists, person doesn't exist
+                    var error = person.error;
+                    if(typeof error != "undefined") {
+                        //person doesn't exist
+                        createPerson(epId);
+                    }
+                    //check if exchange object exists
+                    var exchange = getExchange(epId,appId);
+                    var exchangeItems = exchange.totalItems;
+                    //if exchange object exists, you cannot create a new one
+                    if(exchangeItems > 0){
+                        //check status
+                        if(app.current_status != "realized"){
+                            addExchangeDescription("Exchange can be deleted:",index,"delete",appId);
+                        }
+                        else{
+                            addExchangeDescription("Exchange is realized - can't delete!",index);
+                        }
+                    }
+                    else if(status != "withdrawn"){
+                        addExchangeDescription("Exchange object needs to be created:",index,"create",appId);
+                    }
+                }
+            }
+        };
+        var loadExpand = function(){
+            if(arguments[1] != 'success') return;
+            var application = arguments[0];
+            //legal match date
+            if((application.current_status == "matched" || application.current_status == "approved" || application.current_status == "realized" || application.current_status == "completed") && application.matched_or_rejected_at != null && application.an_signed_at != null) {
+                var ma = new Date(application.an_signed_at);
+            }
+            else{
+                ma = undefined;
+            }
+            //approved date
+            if(application.current_status == "approved" || application.current_status == "realized" || application.current_status == "completed" ){
+              //if(application.timeline.approved. "null"){
+                if(application.timeline.approved == null){
+                  dateApproved = new Date(application.matched_or_rejected_at);
+                }
+                else{
+                  dateApproved = new Date(application.timeline.approved);
+                }
+            }
+            else{
+              dateApproved = undefined;
+            }
+            var epId = application.person.id;
+            var appId = application.id;
+            //getAGB
+            var agb = getAGB(epId,appId);
+            noob.get("people/"+epId+"/exchanges",{
+              applicationID:appId
+            }).then(function(el){
+              if(el.totalItems == 0){ flightDate = "";}
+              else{
+
+
+                var flightDate = new Date (el.payload[0].flightDateTo);
+  							var returnDate = new Date (el.payload[0].flightDateBack);
+  							var startOfTime = new Date("01.01.1970");
+                console.log(returnDate);
+                statusReturn = '';
+  							if(startOfTime <= flightDate){
+  								//then something is saved in the database and show it
+  								var statusFlight = "done";
+  							}
+                else{
+                  var statusFlight = '';
+                  var flightDate = '';
+                }
+                if(startOfTime <= returnDate){
+  								//then something is saved in the database and show it
+  								var statusReturn = "done";
+  							}
+                else{
+                  var statusReturn = '';
+                  var returnDate = '';
+                }
+              }
+              var data = {
+                  dateApplied: application.created_at,
+                  flightDate: flightDate,
+                  statusFlight: statusFlight,
+                  returnDate: returnDate,
+                  statusReturn: statusReturn,
+                  statusApplied: '',
+                  dateAGB: agb.dateSigned,
+                  statusAGB: '',
+                  dateApproved: dateApproved,
+                  statusApproved: '',
+                  dateAN: ma,
+                  statusMatched: '',
+                  dateRealized: application.meta.date_realized,
+                  statusRealized: ''
+              };
+              if(typeof data.dateApplied != "undefined"){
+                  data.statusApplied = "done";
+              }
+              if(typeof data.dateApproved != "undefined"){
+                  data.statusApproved = "done";
+              }
+              if(typeof data.dateAN != "undefined"){
+                  data.statusAN = "done";
+              }
+              if(typeof data.dateRealized != "undefined"){
+                  data.statusRealized = "done";
+              }
+              if(typeof data.dateAGB != "undefined" && data.dateAGB != ""){
+                  data.statusAGB = "done";
+              }
+              var index = getApplicationByAppId(appId);
+              //empty existing shizzle
+              $(".timeline-wrapper").eq(index).empty();
+              $(".sands-wrapper").eq(index).empty();
+              $(".exchangeObject-wrapper").eq(index).empty();
+              $(".feedback-wrapper").eq(index).empty();
+              //add new shizzle
+              addTimeline(index,data);
+              //addSandS(index,application);
+              addCreateExchange(application);
+
+              //slide open if closed, close if open
+              if($(".overflow").eq(index).css("display") == "block"){
+                  $(".overflow").eq(index).hide(1000);
+              }
+              if($(".overflow").eq(index).css("display") == "none"){
+                  $(".overflow").eq(index).show(1000);
+              }
+            });
+
+        };
+        function getApplicationByAppId(appId){
+            //function returns index of application
+            var application = angular.element(jQuery('ul.list')).scope().vm.applications;
+            for(var i=0;i<application.length;i++){
+                app = application[i];
+                id = app.id;
+                if(appId == id){
+                    return i;
+                }
+            }
+        }
+
+        var addExchange = function(exchange, index){
+            var template = tim.template.get('#emptyExchange').compile();
+            var data = {
+                exchangeId: exchange.id
+            };
+            var entries = [];
+            template.scope.data = entries;
+            $('.exchange-wrapper').eq(index).append($(template));
+            entries.push(data);
+        };
+        var loadApplicationInfo = function(){
+            //get id
+            var index = $(this).index();
+            //divide index by two
+            index = Math.floor(index/2);
+            //remove the fucking date that doesnt make sense
+            $(".applications-closing-date").remove();
+            //check the inner text & change it
+            var expandText = $(".expand").eq(index)[0].innerText;
+            if(expandText == "Hide Exchange Details"){
+                $(".expand").eq(index)[0].innerText = "Show Exchange Details";
+            }
+            else{
+                $(".expand").eq(index)[0].innerText = "Hide Exchange Details";
+            }
+            var application = angular.element(jQuery('ul.list')).scope().vm.applications;
+            var app = application[index];
+            var id = app.id;
+            //get application info
+            var requests = [];
+            requests.push(
+                    expa.get('applications/' + id + '.json'));
+            $.whenAll(requests).done(loadExpand);
+        };
+
+
+        var addEntry = function(){
+            if(arguments[0][1] != 'success') return;
+
+            var person = arguments[0][0];
+            var applications = arguments[1][0];
+            var applicationsOfPerson=applications.data;
+            var personData=person;
+
+            //lösche alle unnötigen Dinge auf der Seite
+            cleanPage();
+            addEmptyTable();
+            addTableHeadlines();
+            //Holt die einzelnen Applications per ajax call und fügt sie per jquery in die leere tabelle ein
+            fillTable(applicationsOfPerson, personData);
+        };
+        function cleanPage(){
+            $("ul.list").css('display', 'none');
+            $("table.bookmarklet").remove();
+            $(".emptyExchange").remove();
+            $("aside.sidebar").remove();
+            $("a.bulk-edit.align-right.ng-scope").remove();
+
+            $("span.number-of-results.ng-binding").empty();
+            $("span.number-of-results.ng-binding").append("<strong style= 'font-weight: bold; color: #3692E0;'>only open</strong> applications");
+        };
+        function addTableHeadlines() {
+            var html=$("tbody.bookmarklet").html();
+
+            html+='<tr style="font-weight:bold;"> <th>';
+            html+="EP Name</th><th>";
+            html+="EP ID</th><th>";
+            html+="Application Date</th><th>";
+            html+="TN Name</th><th>";
+            html+="TN ID</th><th>";
+            html+="TN Manager</th><th>";
+            html+="TN Manager e-mail</th><th>";
+            html+="Status</th>"
+            html+="</tr>";
+
+            $("tbody.bookmarklet").html(html);
+        };
+        function createTableRow(opportunity, person, application){
+                var html=$("tbody.bookmarklet").html();
+                if (application.current_status == "open") {
+                    html+='<tr class="application bookmarklet">';
+                    html+=" <td>" + person.full_name + "</td>";
+                    html+=" <td>" + person.id + "</td>";
+                    html+=addApplicationDate(application);
+                    html+=addOpportunityTitle(application);
+                    html+=addTnId(application);
+                    html+=addTnManager(opportunity);
+                    html+=addTnEmail(opportunity);
+                    html+=addStatus(application);
+                    html+="</tr>";
+                }
+                $("tbody.bookmarklet").html(html);
+
+        };
+
+        var formatDate=function (dateString) {
+      		var d = new Date(dateString);
+      		return d.getDate() + "." + (d.getMonth() + 1) + "." + d.getFullYear();
+      	}
+
+        function addApplicationDate(application){
+            var date =formatDate(application.created_at);
+            return '<td class="bookmarklet">'+
+                    '<p>'+date+'</p>'+
+                    '</td>';
+        }
+
+        function addOpportunityTitle(application){
+            return '<td class="bookmarklet">'+
+                    '<p>'+application.opportunity.title+'</p>'+
+                    '</td>';
+        }
+
+        function addTnId(application){
+            return '<td class="bookmarklet">'+
+                    '<p>'+application.opportunity.id+'</p>'+
+                    '</td>';
+        }
+
+        function addTnManager(opportunity) {
+            return '<td class="bookmarklet">'+
+                    '<p>'+opportunity.managers[0].full_name+'</p>'+
+                    '</td>';
+        }
+
+        function addTnEmail(opportunity) {
+            return '<td class="bookmarklet">'+
+                    '<p>'+opportunity.managers[0].email+'</p>'+
+                    '</td>';
+
+        }
+
+        function addStatus(application){
+            return '<td class="bookmarklet">'+
+                    '<div class="stage-actions">'+
+                    '<div class="status-container">'+
+                    '<span class="status '+application.current_status+'">'+application.current_status+'</span>'+
+                    '</div>'+
+                    '</div>'+
+                    '</td>';
+        }
+        function addEmptyTable(){
+            $("div.crm-list").append("<table style='color:#777' class='bookmarklet'><tbody class='bookmarklet'></tbody></table>");
+        };
+        function fillTable(applications, person){
+            for(var j = 0; j < applications.length; j++) {
+                application = applications[j];
+                getOpportunity(application, person);
+            }
+        };
+        getOpportunity=function (application, person) {
+            if(application.id == "519204"){}
+            else{
+              id  = application.opportunity.id;
+              expa.get('opportunities/' + id + '.json').then(function(opportunity){
+                createTableRow(opportunity, person, application);
+              });
+            }
+        };
+        var generateTable = function() {
+            var personId = angular.element($('div.ng-scope')).scope().vm.id;
+            var requests = [];
+            requests.push(
+                    expa.get('people/' + personId + '.json'));
+            requests.push(
+                    expa.get('people/' + personId + '/applications.json'));
+            $.whenAll(requests).done(addEntry);
+        };
+        var main = function(){
+          tim.find('[ng-show="$parent.vm.person.permissions.can_view_applications"]').then(function(applications){
+            var scope = angular.element(applications).scope();
+
+            tim.wait(scope.vm, "applications").then(function(){
+              //add table view
+              $("<span>&nbsp;<a class='btn'>Table View</a></span>")
+              .insertAfter($('.number-of-results'))
+              .click(generateTable);
+
+              var epId = getEpId();
+
+              //add old exchanges
+              var exchanges = getExchanges(epId);
+              var exchangesLength = "";
+              if(typeof exchanges.error == "object"){
+                exchangesLength = 0;
+              }
+              else{
+                exchanges = exchanges.payload;
+                exchangesLength = exchanges.length;
+              }
+              for(var i=0;i<exchangesLength;i++) {
+                  //check whether application id is empty
+                  var applicationId = exchanges[i].applicationID;
+                  if (applicationId == null) {
+                      $("<div class='emptyExchange'><div class='exchange-wrapper'></div></div>").insertBefore($("ul.list"));
+                      addExchange(exchanges[i],i);
+                  }
+              }
+
+              //get Applications
+              var application = angular.element(jQuery('ul.list')).scope().vm.applications;
+              for(var i=0;i<application.length;i++){
+                  var app = application[i];
+                  var id = app.id;
+                  $('<a class="hide-action-bar expand" ng-hide="vm.actionBarHidden" ng-click="vm.actionBarHidden=true" style="color: #777; bottom: 7px; right: -10px; position: relative; font-size: 1.4rem; padding: 0 35px 0 10px; background: #fff url(https://cdn-expa.aiesec.org/assets/images/icons/collapse.svg) top right 10px no-repeat;">Show Exchange Details</a>').insertAfter($(".application").eq(i));
+                  $(".expand").eq(i).bind("click",loadApplicationInfo);
+                  //adding a hidden container below each
+                  $("<div class='overflow' style='display:none'><div style='width:400px;float:left;' class='timeline_exchangeObject-wrapper'><div class='timeline-wrapper'></div><div class='sands-wrapper'></div></div><div style='width:400px;float:left;' class='exchangeObject-wrapper'></div><div style='width:400px;float:left;' class='feedback-wrapper'></div></div>").insertAfter($(".general-top").eq(i));
+                  //adding programs application
+                  //get program
+                  if(app.opportunity === null){
+                    continue;
+                  }
+                  program = app.opportunity.programmes.short_name;
+                  $('.general-top').eq(i).prepend("<span style='color:white;' class='programme "+program.toLowerCase()+"'>"+program+"</span>&nbsp;")
+              }
+              //fix problem that approve button cannot be clicked because it is hidden
+              $(".stage.compact").css("right","1px");
+            });
+          });
+        }
+        /*
+            tim.find('.crm-list').then(function(nav){
+              console.log("Hello");
+
+
+
+
+            });
+
+        };*/
+        //tim.helper.get('expa').mock();
+        tim.script.add({
+            name: 'Exchanges Deluxe',
+            route: 'https:\/\/experience\.aiesec\.org\/#\/people\/[0-9]+\/applications',
+            script: main
+        });
+
+    })(aigTim, jQuery);
+</script>

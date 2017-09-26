@@ -1,0 +1,165 @@
+<style>
+	.analytics-title{
+		padding: 30px;
+		text-align: center;
+		position: relative;
+	}
+	.analytics-body{
+		padding-top: 20px;
+		position: relative;
+		background: #f8fbfd;
+		border: 1px #ddd solid;
+		border-radius: 4px;
+	}
+	.analytics-body-text{
+		padding: 30px;
+		position: relative;
+		background: #f8fbfd;
+		border: 1px #ddd solid;
+		border-radius: 4px;
+	}
+	.analytics-confirm{
+		margin-top:20px;
+		margin-bottom:20px;
+	}
+	.comparison{
+		display: block;
+		margin-top: 7px;
+		font-size: 1.4rem;
+		font-style: italic;
+		color: #777;
+	}
+	.table-comparison{
+		font-size: 1.2rem!important;
+	}
+	.table-result{
+		font-size: 1.4rem!important;
+	}
+	.appsBetaButton{
+		text-align: center;
+		width:180px;
+		min-height:180px;
+		height:auto;
+		margin:50px;
+		float:left;
+	}
+</style>
+<template id="analytics-appsbeta">
+	<div class="wrapper thin aig-container">
+		<div class="analytics-header">
+			<div class="analytics-title">
+				<h1>Apps Beta</h1>
+			</div>
+			<a href="/#/analytics/appsbeta/tn-manager-incoming/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>TN Manager Approval Pending (incoming)</label>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-manager-incoming/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>EP Manager Approval Pending (incoming)</label>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/tn-open/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>Opportunities open & to process</label>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-outgoing-ge/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>EP Approval Pending</label>
+						<br /><br />
+						<span style="width:100px;" class="programme ge">GE</span>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-outgoing-gv/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>EP Approval Pending</label>
+						<br /><br />
+						<span style="width:100px;" class="programme gv">GV</span>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-outgoing-gt/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>EP Approval Pending</label>
+						<br /><br />
+						<span style="width:100px;" class="programme gt">GT</span>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-manager-outgoing-ge/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>TN Manager Approval Pending</label>
+						<br /><br />
+						<span style="width:100px;" class="programme ge">GE</span>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-manager-outgoing-gv/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>TN Manager Approval Pending</label>
+						<br /><br />
+						<span style="width:100px;" class="programme gv">GV</span>
+					</div>
+				</div>
+			</a>
+			<a href="/#/analytics/appsbeta/ep-manager-outgoing-gt/">
+				<div class="analytics-body appsBetaButton">
+					<div class="field">
+						<label>TN Manager Approval Pending</label>
+						<br /><br />
+						<span style="width:100px;" class="programme gt">GT</span>
+					</div>
+				</div>
+			</a>
+		</div>
+	</div>
+</template>
+<script type="text/javascript">
+
+	(function(tim, $){
+		var expa = tim.helper.get('expa'),
+			noob = tim.helper.get('noob');
+		function template() {
+			return tim.template.get('#analytics-appsbeta').getDom().outerHTML;
+		};
+
+		var main = function (){
+		};
+
+
+		function controller($scope, $stateParams) {
+			main();
+		};
+
+		var newState = {
+			state: 'analytics-appsbeta',
+			config: {
+				url: '/analytics/appsbeta',
+				views: {
+					'root@': {
+						template: template,
+						controller: controller
+					}
+				}
+			}
+		};
+
+		aigTim.addState(newState);
+
+	})(aigTim, jQuery);
+
+</script>

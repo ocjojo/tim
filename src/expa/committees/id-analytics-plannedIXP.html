@@ -1,0 +1,104 @@
+<style>
+	#retention-input input {
+		width: auto;
+	}
+</style>
+<template type="text/ng-template" id="plannedIXP">
+<!--	<div id="retention-input">
+		von <input type="date" name="fromDate" ng-model="fromDate">
+		bis <input type="date" name="toDate" ng-model="toDate">
+		<span ng-click="reload()" class="btn">reload</span>
+
+	</div> should be used when noob2 is impplemented to filter planned IXP by a certain Date -->
+	<div id="retention-table">
+		<table>
+			<tr>
+				<th>LC</th>
+				<th>Name</th>
+				<th>Field of Study</th>
+				<th>When</th>
+			</tr>
+			<tr ng-repeat="row in rows">
+				<td>{{row.lc}}</td>
+				<td>{{row.name}}</td>
+				<td>{{row.fieldOfStudy}}</td>
+				<td>{{row.when}}</td>
+			</tr>
+		</table>
+	</div>
+</template>
+<script>
+(function(tim, $){
+	var noob = tim.helper.get('noob'),
+			expa = tim.helper.get('expa'),
+			time = tim.helper.get('time');
+			fromDate = new Date(),
+			toDate = new Date();
+		fromDate.setDate(fromDate.getDate() - 90);
+
+		var controller = function($scope, $stateParams, User) {
+			$scope.fromDate = fromDate;
+			$scope.toDate = toDate;
+			$scope.rows = processIXP($scope.fromDate, $scope.toDate);
+
+			function processIXP(fromDate, toDate) { //fromDate and toDate will be used in filter when noob2 is impplemented to filter planned IXP by a certain Date
+				var rows = [];
+
+				var filter = {}; //empty Object, will be used for the national overview, where no filters are needed
+
+				if ($stateParams.id != 1596) {
+					filter.lcId = $stateParams.id;	
+				}
+
+				noob.get('ixp/planned', filter).then(function(data){
+					
+					$.each(data,function(index, ixp){
+
+						rows[index] = {
+							lc: '-',
+							name: '-',
+							fieldOfStudy: '-',
+							when: ixp.timeframeInternship
+						}; 
+
+						expa.get('people/' + data[index].memberId + '.json').then(function(expadata){
+							
+							rows[index].lc = expadata.home_lc.name;
+							rows[index].name = expadata.full_name;
+						});
+
+						noob.get('people/' + data[index].memberId + '/applicationInformation').then(function(applicationInfo) {
+							
+							rows[index].fieldOfStudy = applicationInfo.fieldOfStudy;
+						});
+
+					}); 
+					
+
+				}); 
+
+				return rows;
+			};
+
+			$scope.reload = function(){
+				$scope.rows = processIXP($scope.fromDate, $scope.toDate);
+			}; 
+		};
+
+   var newState = {
+			state: 'committee.analytics.plannedIXP',
+            config: {
+                url: '/plannedIXP',
+                views: {
+                	'analytics': {
+                		templateUrl: 'plannedIXP',
+                		controller: controller
+                	}
+                }
+            }
+		};
+
+		tim.addState(newState);
+	
+})(aigTim, jQuery);
+</script>

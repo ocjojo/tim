@@ -1,0 +1,108 @@
+<style>
+
+</style>
+<template id="analytics-appsbeta-tn-open">
+	<div class="wrapper thin aig-container">
+		<div class="analytics-header">
+			<div class="analytics-title">
+				<h1>Opportunities open & to process</h1>
+			</div>
+			<div class="analytics-body-text">
+				<div class="statement">Showing all German opportunities that are open & to process</div>
+				</div>
+			</div>
+			<div class="analytics-appsbeta-tn-open-wrapper">
+	</div>
+	</div>
+</template>
+<template id="analytics-appsbeta-tn-open-tableheader">
+	<div class="analytics-results-header">
+		<table class="analytics-table">
+			<thead>
+				<tr>
+					<th class="table-result">Opportunity ID</th>
+					<th class="table-result">Opportunity Name</th>
+					<th class="table-result">Location</th>
+					<th class="table-result">Close Date</th>
+				</tr>
+			</thead>
+			<tbody id="analytics-appsbeta-tn-open-body">
+
+			</tbody>
+		</table>
+	</div>
+</template>
+<template id="analytics-appsbeta-tn-open-results">
+	<tr>
+		<th class="table-result"><a href="https://experience.aiesec.org/#/opportunities/{{data[0].opportunityId}}">{{data[0].opportunityId}}</a></th>
+		<th class="table-result">{{data[0].name}}</th>
+		<th class="table-result">{{data[0].office}}</th>
+		<th class="table-result">{{data[0].close_date}}</th>
+	</tr>
+</template>
+<script type="text/javascript">
+
+	(function(tim, $){
+		var expa = tim.helper.get('expa'),
+			noob = tim.helper.get('noob');
+		function template() {
+			return tim.template.get('#analytics-appsbeta-tn-open').getDom().outerHTML;
+		};
+
+		var main = function (){
+			//build table
+			var template = tim.template.get('#analytics-appsbeta-tn-open-tableheader').compile();
+			$('.analytics-appsbeta-tn-open-wrapper').append($(template));
+			//grab data
+			var requests = [];
+			requests.push(
+							expa.get('opportunities.json', {
+								"filters[statuses]": ["open","in+progress"],
+								"filters[programmes]": [1,2,5],
+								"filters[committee]":1596,
+								"per_page": 1000
+							}));
+			$.whenAll(requests).done(loadData);
+		};
+
+		var loadData = function(){
+				if(arguments[1] != 'success') return;
+				var opportunities = arguments[0];
+				for(var i in opportunities.data) {
+					var opportunity = opportunities.data[i];
+					var appData = {
+						opportunityId: opportunity.id,
+						name: opportunity.title,
+						office: opportunity.location,
+						close_date: opportunity.applications_close_date
+					};
+
+					var template = tim.template.get('#analytics-appsbeta-tn-open-results').compile();
+					var entries = [];
+					template.scope.data = entries;
+					$('#analytics-appsbeta-tn-open-body').append($(template));
+					entries.push(appData);
+				}
+		};
+
+		function controller($scope, $stateParams) {
+			main();
+		};
+		var newState = {
+			state: 'analytics-appsbeta-tn-open',
+			config: {
+				url: '/analytics/appsbeta/tn-open/',
+				views: {
+					'root@': {
+						template: template,
+						controller: controller
+					}
+				}
+			}
+		};
+
+		aigTim.addState(newState);
+
+	})(aigTim, jQuery);
+
+</script>

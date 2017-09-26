@@ -1,0 +1,101 @@
+<style>
+</style>
+<template id="app/content/people/profile/profile.positions.html" type="text/ng-template">
+
+	<div ng-if="vm.person.positions.length" class="profile-block">
+		<span>AIESEC positions</span>
+		<div class="profile-block-content experiences">
+			<ul class="experiences-list academic">
+				<li ng-repeat="position in vm.person.positions" ng-click="show=!show" ng-class="show === true ? 'visible' : ''">
+					<span class="experience-link"><span class="organisation">{{ position.position_name }}</span> <span class="country">{{ position.team.office.name }}</span></span>
+					<div class="experience-info">
+						<ul class="details-list">
+							<li>
+								<div class="detail"><span class="key">Team:</span> <span class="value">{{ position.team.title }}</span></div>
+								<div class="detail"><span class="key">Title:</span> <span class="value">{{ position.name }}</span></div>
+								<div class="detail"><span class="key">Start Date:</span> <span class="value">{{ position.start_date | date:'d MMM yyyy' }}</span></div>
+								<div class="detail"><span class="key">End Date:</span> <span class="value">{{ position.end_date | date:'d MMM yyyy' }}</span></div>
+								<div class="detail"><span class="key">Job description:</span> <div class="value">{{ position.job_description }}</div></div>
+								<div class="detail"><span class="key">MoS:</span> <span class="value">{{ position.mos }}</span></div>
+								<div class="detail"><span class="key">KPI:</span> <span class="value">{{ position.kpi1 }}</span></div>
+								<div class="detail"><span class="key">KPI:</span> <span class="value">{{ position.kpi2 }}</span></div>
+								<div class="detail"><span class="key">KPI:</span> <span class="value">{{ position.kpi3 }}</span></div>
+								<div class="detail"><span class="key">Data Privacy Statment:</span> <span class="value">{{ position.datasecurity ? "Accepted" : "Not Accepted" }}</span></div>
+							</li>
+						</ul>
+						<a href class="btn confirm" ng-if="!position.datasecurity && position.allowedToSee" ng-click="agreeDataPrivacyStatement($event)">I accept</a>
+						<span ng-if="!position.datasecurity && position.allowedToSee"> Hereby I agree with the <a ng-click="$event.stopPropagation();" href="https://noob.aiesec.de/bundles/frontend/files/dss.pdf" target="_blank">Data Privacy Statement</a></span>
+						<span ng-if="position.datasecurity"><a  ng-click="$event.stopPropagation();" href="https://noob.aiesec.de/bundles/frontend/files/dss.pdf" target="_blank">Data Privacy Statement</a></span>
+					</div>
+				</li>
+			</ul>
+			<span class="none" ng-if="!vm.person.positions.length">No current AIESEC positions</span>
+		</div>
+	</div>
+</template>
+<script>
+	(function(tim, $){
+		var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob');
+
+		var main = function($stateParams, User){
+
+			tim.find('[ng-show="vm.person"]').then(function(person){
+				var scope = angular.element(person).scope();
+
+				tim.wait(scope.vm, "person").then(function(){
+					$.each(scope.vm.person.positions, function(index, position){                       
+
+            if(User.id == $stateParams.id || User.id == 9476 || User.id == 1078567) {    //only Owner of the Profile can see the Button for the Data Security Statement and User with specific IDs
+            	position.allowedToSee = true;
+            }
+            else {
+            	position.allowedToSee = false;
+            }
+
+            noob.get('jds/' + position.id).then(function(data){
+
+            	position.mos = data.mos[0];
+            	position.kpi1 = data.kpi[0];
+            	position.kpi2 = data.kpi[1];
+            	position.kpi3 = data.kpi[2];
+            	position.datasecurity = data.dataSecuritySigned;
+            });
+          });
+
+          scope.agreeDataPrivacyStatement = function($event){        //agrees the Data Security Statement after clicking the button and saves it in noob     
+            var position = angular.element($event.currentTarget).scope().position;
+          	noob.patch('jds/' + position.id, {dataSecuritySigned: true}).then(function(data){
+          		position.datasecurity = true; 
+          	}).fail(function(){
+              var data = {
+                id: position.id,
+                memberId : $stateParams.id,
+                committeeId: position.team.office.id,
+                startDate: position.start_date ? expa.formatDate(position.start_date) : expa.formatDate(new Date(0)),
+                endDate: position.end_date ? expa.formatDate(position.end_date) : expa.formatDate(new Date(0)),
+                mos: [],
+                kpi: [],
+                reasonForLeaving: '',
+                team: position.team.title,
+                dataSecuritySigned: true
+              };
+              
+              noob.post('jds', data).then(function(data){   //creating JD when it is not existing
+                position.datasecurity = true;
+              });
+            });  
+            $event.stopPropagation();
+          };
+        });
+		  });        
+		};
+
+		tim.script.add({
+			name: 'KPI_MOS_in_JD',
+			route: 'https:\/\/experience\.aiesec\.org\/#\/people\/[0-9]+',
+			script: main
+		});
+
+	})(aigTim, jQuery);
+</script>

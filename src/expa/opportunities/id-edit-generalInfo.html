@@ -1,0 +1,66 @@
+<style>
+</style>
+<template id="hubspot-id-tmp">
+	<div class="field">
+		<label for="branch">Hubspot ID
+		</label> 
+		<input type="text" id="hubspot-id">
+	</div>
+</template>
+
+<script>
+	(function(tim, $){
+
+		var main = function(noob, expa, scope, $stateParams){
+			
+			tim.find('[name="giForm"]').then(function(el){
+				var $form = $(el).prepend(tim.template.get('#hubspot-id-tmp'));
+				$('.btn.confirm').click(function(){
+					console.log($('#hubspot-id').val());
+				});
+			});
+
+			var saveNoobOpportunity = function(data){
+				var input = data;
+				noob.patch('opportunities/' + data.id, data).then(function(data){}, function(){		//second function for  request fail
+						noob.post('opportunities', input);
+				});
+			};
+
+			//listen to click on confirm button
+			scope.delayedGet('vm', '.modal')
+			.then(function(vm){
+				var _confirmMethod = vm.confirmMethod;	
+				
+				vm.confirmMethod = function(){
+					scope.delayedGet('vm', '.modal')
+					.then(function(vm){	
+						var id = $stateParams.id;
+						var data = {
+							id : id,
+							hubspotId : null,
+							location : vm.location,
+							startDate : expa.formatDate(vm.earliest_start_date),
+							endDate : expa.formatDate(vm.latest_end_date),
+							companyName : vm.branch.name,
+							companyStreet : vm.branch.address_info.address_1,
+							zipCode : vm.branch.address_info.postcode,
+							city : vm.branch.address_info.city,
+							phone : vm.branch.organisation.contact_info.phone
+						};
+						saveNoobOpportunity(data);
+						_confirmMethod();
+					});
+				}
+			});
+
+		};
+
+		tim.script.add({
+		name: 'hubspot-id-field',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/opportunities\/[0-9]+\/edit\/general-info',
+		script: main
+	});
+
+	})(aigTim, jQuery);
+</script>

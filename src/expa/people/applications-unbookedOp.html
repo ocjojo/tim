@@ -1,0 +1,138 @@
+<style>
+	.block{
+		display: block;
+	}
+</style>
+
+<template id="applications-extra-dropdown">
+	<a ng-click="toggleDropdown()" class="applications-extra-dropdown dropdown-link  programme">More actions</a> &nbsp;
+	<ul ng-click="toggleDropdown()" class="applications-extra-dropdown-actions dropdown-menu actions reject">
+		<li>
+			<a ng-click="unbookedOps()" class="archived status">Unbooked OPS</a>
+		</li>
+	</ul>
+</template>
+
+<style>
+	table.fee td,
+	table.fee th,
+	table.ops td,
+	table.ops th{
+		padding:2px 4px
+	}
+</style>
+
+<template id="unbooked-op-table">
+	<table id="unbooked_op">
+		<tr>
+			<th>EP ID</th>
+			<th>Name</th>
+			<th>AGB Version</th>
+			<th>OPS Info</th>
+			<th>OP Fee</th>
+		</tr>
+		<tr ng-repeat="person in persons" ng-if="person.feeBooked=='no'">
+			<td>{{person.id}}</td>
+			<td><a href='{{person.url}}' target='_blank'>{{person.full_name}}</a></td>
+			<td><a href='{{person.details.agbUrl}}' target='_blank'>{{person.details.agbImplementationDate}}</a></td>
+			<td>
+				<table class='ops'>
+					<tr>
+						<th>OP</th>
+						<th>Datum</th>
+					</tr>
+					<tr>
+					<td>{{person.opType}}</td>
+					<td>{{person.opDate}}</td>
+					</tr>
+				</table>
+			</td>
+			<td>
+				<table class='fee'>
+					<tr>
+						<th>OP Fee</th>
+						<th>Booked</th>
+					</tr>
+					<tr>
+					<td>{{person.details.amountOfIccFee}}</td>
+					<td>{{person.feeBooked}}</td></tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+	var noob = tim.helper.get('noob'),
+		expa = tim.helper.get('expa'),
+		persons = {};
+
+	var inifiniteScroll = function(data){
+		var applications = data.data;
+		var ids = [];
+		for(var i in applications) {
+			var person = applications[i].person;
+			persons[person.id] = person;
+			ids.push(person.id);
+		}
+		getData(ids);
+	};
+	var unbookedOps = function() {
+		// expa.addInfiniteScroll({
+		// 	route: 'https://gis-api.aiesec.org/v2/applications.json',
+		// 	script: inifiniteScroll
+		// });
+
+		//loop over people
+		var ids = [];
+		$("li[ng-repeat].application").each(function(i,el) {
+			var person = $(el).scope().application.person;
+			persons[person.id] = person;
+			ids.push(person.id);
+		}).remove();
+		if(!ids.length) return;
+		$("ul.list").empty();
+		var opTable = tim.template.get('#unbooked-op-table').compile().getDom();
+		opTable.scope.persons = persons;
+		getData(ids, opTable.scope);
+		$(opTable)
+		.insertBefore('[infinite-scroll="vm.getMoreData()"]');
+		$(".no-results").hide();
+		$("body").height($(window).height()+150);
+	};
+	var getData = function(ids, scope) {
+		noob.get('reports/unbookedOps', {
+			ids: ids
+		}).then(function(data){
+			for(var i in data){
+				var id = data[i].personId;
+				scope.persons[id].details = data[i];
+				insertTableRow(id, scope);
+			}
+		});
+	};
+	var insertTableRow = function(id, scope){
+		var person = scope.persons[id];
+		person.opDate = person.details.opStartDate || person.details.opsOnlineBookingDate;
+		person.opType = person.details.opType + " " + person.details.opLc;
+		person.feeBooked = person.details.iccFeeBooked != '0' ? "yes" : "no";
+	};
+
+	var controller = function(){
+		var dropdown = tim.template.get('#applications-extra-dropdown').compile();
+		$(dropdown).insertBefore("a.dropdown-link.programme");
+		dropdown.scope.toggleDropdown = function(){
+			document.querySelector('.applications-extra-dropdown-actions').classList.toggle('block');
+		};
+		dropdown.scope.unbookedOps = unbookedOps;
+	};
+
+	tim.script.add({
+		name: 'unbooked OPs',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/people\/applications+.*',
+		script: controller
+	});
+
+})(aigTim, jQuery);
+</script>

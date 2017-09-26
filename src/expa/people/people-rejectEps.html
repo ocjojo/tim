@@ -1,0 +1,104 @@
+<style>
+	.reject{
+		left: 0px;
+		width:130px!important;
+		display:none;
+
+	}
+</style>
+
+
+<template id="dropdown">
+	<a id="dropdown-button-actions" class="dropdown-link  programme">More actions</a> &nbsp;
+	<ul class="dropdown-menu actions reject">
+		<li>
+			<a class="archived status">Reject selected</a>
+		</li>
+		<li>
+			<a class="archived status unreject">Unreject selected</a>
+		</li>
+	</ul>
+</template>
+
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob');
+
+	var main = function(){
+		//add checkboxes
+		tim.find('.status-container.align-right')
+		.then(addCheckboxes)
+		.then(function(){
+			var template = tim.template.get('#dropdown').compile();
+			$(template).insertBefore($("a.dropdown-link.programme").eq(1));
+			//show & hide dropdown
+			$("#dropdown-button-actions")
+			.click(showDropdown);
+			//run actions
+			$(".archived.status")
+			.click(rejectSelected);
+			$(".archived.status.unreject")
+			.click(unrejectSelected);
+		});
+	};
+
+	var showDropdown = function(){
+		var display = $(".dropdown-menu.actions").css("display");
+		if(display == "none"){
+			$(".dropdown-menu.actions").css({"display":"block"});
+		}
+		else{
+			$(".dropdown-menu.actions").css({"display":"none"});
+		}
+	};
+
+	var rejectSelected = function(){
+		checkboxes = $(".rejectCheckbox");
+		var people = angular.element($('ul.list')).scope().vm.people;
+		for(var i=0;i<checkboxes.length;i++){
+			var checkbox = checkboxes[i];
+			if(checkbox.checked === true) {
+				//get ep
+				var person = people[i];
+				//mark as archived				
+				expa.post('people/' + person.id + '/archive.json');
+				$(".person").eq(i).find($(".status")).html("archived");
+				$(".person").eq(0).find($(".status")).attr("class", "status archived");
+
+			}
+
+		}
+	};
+
+	var unrejectSelected = function(){
+		checkboxes = $(".rejectCheckbox");
+		var people = angular.element($('ul.list')).scope().vm.people;
+		for(var i=0;i<checkboxes.length;i++){
+			var checkbox = checkboxes[i];
+			if(checkbox.checked === true) {
+				//get ep
+				var person = people[i];
+				//mark as archived
+				expa.delete('people/' + person.id + '/archive.json');
+				$(".person").eq(i).find($(".status")).html("open");
+				$(".person").eq(0).find($(".status")).attr("class", "status open");
+			}
+
+		}
+	};
+
+	var addCheckboxes = function(){
+		$("<span><input class='rejectCheckbox' type='checkbox'></span>")
+		.appendTo(".status-container.align-right");
+	};
+
+	tim.script.add({
+		name: 'Reject EPs',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/people',
+		script: main
+	});
+
+
+})(aigTim, jQuery);
+</script>

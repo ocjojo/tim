@@ -1,0 +1,223 @@
+<!--
+****************************
+Weiterleitung von tim/team-overview
+****************************
+-->
+
+<script type="text/javascript">
+	(function(tim, $) {
+
+		var controller = function($state, User) {
+		//reroute to offical expa teamsOverview
+		$state.go('committee.teams', {
+			id: User.current_office.id
+		});
+	};
+
+	var newState = {
+		state: 'tim.team-overview',
+		config: {
+			url: '/tim/team-overview',
+			views: {
+				'root@': {
+					template: '',
+					controller: controller,
+				}
+			}
+		}
+	};
+
+	tim.addState(newState);
+
+})(aigTim, jQuery);
+</script>
+
+<!--
+****************************
+Team Edit / Create Team Overwrite
+****************************
+-->
+
+<template type="text/ng-template" id="app/content/committees/teams/team.modal.html">
+	<div class="modal-header">
+		<a class="modal-close" aria-label="Close" ng-click="vm.close()"><span aria-hidden="true">&times;</span></a>
+		<h4 class="modal-title" ng-if="!vm.team.id">Add a new Team</h4>
+		<h4 class="modal-title" ng-if="vm.team.id">Edit a Team</h4>
+	</div>
+	<form>
+		<div class="modal-content">
+			<div class="field"><label>Title <span class="required">*</span></label>
+				<select ng-model="vm.team.title">
+					<option value="oGV">oGV</option>
+					<option value="oGT">oGT</option>
+					<option value="iGT">iGT</option>
+					<option value="iGV">iGV</option>
+					<option value="REC">REC</option>
+					<option value="FIN">FIN</option>
+					<option value="TM">TM</option>
+					<option value="other">other</option>
+				</select>
+			</div>
+			<div class="modal-footer"><a class="btn confirm" ng-click="vm.saveTeam()">Save</a> <a class="btn cancel" ng-click="vm.close()">Cancel</a></div>
+		</div>
+	</form>
+</template>
+
+
+<!--
+****************************
+Position Edit
+****************************
+-->
+
+<template id="comittees-id-teams-edit">
+	<div class="aig-jd fields">
+		<div class="half">
+			<label for="kpi[0]">KPI 1</label>
+			<input type="text" id="kpi[0]">
+			<label for="kpi[1]">KPI 2</label>
+			<input type="text" id="kpi[1]">
+			<label for="kpi[2]">KPI 3</label>
+			<input type="text" id="kpi[2]">
+		</div>
+		<div class="half">
+			<label for="mos[0]">MoS</label>
+			<input type="text" id="mos[0]">
+			<label for="reason-for-leaving">Reason for leaving</label>
+			<select id="reason-for-leaving">
+				<option value="Finished Studies">Finished Studies</option>
+				<option value="Going abroad">Going abroad</option>
+				<option value="Internship/leaving city">Internship/leaving city</option>
+				<option value="Bigger focus on things besides AIESEC">Bigger focus on things besides AIESEC</option>
+				<option value="No motivation to work for AIESEC anymore">No motivation to work for AIESEC anymore</option>
+				<option value="Person does not fit into AIESEC right now">Person does not fit into AIESEC right now</option>
+				<option value="new JD in different Team">new JD in different Team</option>
+				<option value="Other">Other</option>
+			</select>
+			<label>Changes will only be displayed after a refresh of the page</label>
+		</div>
+	</div>
+</template>
+
+<script>
+(function(tim, $) {
+
+	var controller = function(noob, expa, time, $stateParams){
+
+		var sendPosition = function(data, noobJdCreated){
+			if(noobJdCreated){
+				noob.patch('jds/' + data.id, data);
+			} else {
+				noob.post('jds', data);
+			}
+		};
+
+		// called on save click in modal, is handed the modal copy of position
+		var savePosition = function(role){
+			// return eventListener function
+			return function(event){
+				if(!$(event.target).is(".confirm")) return;
+
+				//check dates
+				dayDiff = time.dayDiff(role.start_date, role.end_date);
+				if(dayDiff < 0) return; // position cannot begin after it ended
+				
+				var data = {
+					memberId: role.person.id,
+					committeeId: $stateParams.id,
+					kpi: [],
+					mos: [],
+					startDate: expa.formatDate(role.start_date),
+					endDate: expa.formatDate(role.end_date),
+					reasonForLeaving: $("#reason-for-leaving").val()
+				};
+
+				// if dates do not comply with expa constraints but are valid for germany
+				if(dayDiff < 6*7) {
+					role.end_date = time.addDays(role.start_date, 6*7);
+				} else if (dayDiff > 78*7) {
+					role.end_date = time.addDays(role.start_date, 78*7);
+				}
+				
+
+				for(var i = 0; i < 3; i++){
+					data.kpi[i] = $('[id="kpi[' + i +  ']"]').val();
+				}
+				for(i = 0; i < 1; i++){
+					data.mos[i] = $('[id="mos[' + i +  ']"]').val();
+				}
+
+				//if editing
+				if(typeof role.id != 'undefined') {
+					data.id = role.id;
+					data.team = role.team.title;
+					sendPosition(data, typeof role.noobJd == 'object');
+				} else { //if creating new team
+					event.stopPropagation(); // so post is not called twice
+					event.preventDefault();
+					//get team title from parent position
+					data.team = role.roleReference.team.title;
+					expa.post('teams/' + role.roleReference.team.id + '/positions.json', {
+						position: role
+					})
+					.then(function(createdPosition){
+						data.id = createdPosition.id;
+						role.id = createdPosition.id; //now on save patch will be called
+						console.log(data);
+						sendPosition(data, false);
+						$(event.target).click();
+					});
+				}
+				
+			};
+		};
+
+		//delegate event listener for add/edit position buttons
+		$( "body" ).on( "click",
+			'[ng-click="vm.addPosition(role.id);"], [ng-click="vm.editPosition(role);"]',
+			function(event) {
+				//append our own fields to edit modal
+				$('.modal-content>.field:last').prepend(tim.template.get('#comittees-id-teams-edit'));
+
+				var isEdit = $(event.currentTarget).is('[ng-click="vm.editPosition(role);"]');
+
+				var role = angular.element($(event.currentTarget).closest('.team-role')).scope().$parent.role;
+				// is a copy of role within modal controller
+				var position = angular.element($('[ng-model="vm.position.start_date"]')).scope().vm.position;
+				position.roleReference = role;
+
+				//only get jdInfo, if edit, not on create
+				if(isEdit) {
+					
+					noob.get('jds/' + role.id).then(function(data){
+						position.noobJd = data;
+						for(var i = 0; i < data.kpi.length; i++){
+							$('[id="kpi[' + i +  ']"]').val(data.kpi[i]);
+						}
+						for(i = 0; i < data.mos.length; i++){
+							$('[id="mos[' + i +  ']"]').val(data.mos[i]);
+						}
+						if(data.reasonForLeaving !== ""){
+							$("#reason-for-leaving").val(data.reasonForLeaving);
+						}
+
+						position.start_date = data.startDate;
+						position.end_date = data.endDate;
+					});
+				}
+
+				//listener in capture phase to get there before expa patch is sent for edit
+				$('.modal-footer')[0].addEventListener('click', savePosition(position), true);
+			}
+		);
+		
+	};
+
+	tim.script.add({
+		name: 'teamOverview',
+		route: 'https://experience.aiesec.org/#/committees/(.*)/teams',
+		script: controller
+	});
+
+})(aigTim, jQuery);
+</script>

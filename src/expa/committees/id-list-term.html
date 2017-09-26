@@ -1,0 +1,147 @@
+<template id="committee-list-term" type="text/ng-template">
+	<sortable-table></sortable-table>
+</template>
+
+<script type="text/javascript">
+(function(tim, $){
+
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob'),
+		termDataPromise;
+
+	var getTermData = function($stateParams) {
+		termDataPromise = $.Deferred();
+
+		expa.get('committees/' + $stateParams.id + '/terms/' + $stateParams.termId + '.json')
+		.then(getTeamData)
+		.then(getMemberData)
+		.then(getDataPrivacyStatements)
+		.then(termDataPromise.resolve, termDataPromise.reject);
+
+		return termDataPromise.promise();
+	};
+
+	var getTeamData = function(term) {
+		var requests = [];
+		for(var i in term.teams) {
+			requests.push(
+			expa.get('teams/' + term.teams[i].id +'/positions.json'));
+		}
+		return $.when.apply($, requests);
+	};
+
+	var getMemberData = function() {
+		var ids = {};
+		// arguments[i] is returned data from requests in getTeamData
+		for(var i in arguments) {
+			//ids is referenced by this in convertPositionToPerson
+			arguments[i][0].data.forEach(convertPositionToPerson, ids);
+		}
+
+		return expa.getPersonDetailsFromIds(ids);
+	};
+
+	var getDataPrivacyStatements = function(memberData){
+		var deferred = $.Deferred();
+		var requests = [];
+
+		var handleDataSecuritySigned = function(id){
+			return function(jd){
+				memberData[id].dataSecuritySigned = jd.dataSecuritySigned;
+			};
+		};
+
+		for(var i in memberData){
+			requests.push(
+				noob.get('jds/' + memberData[i].position.id)
+				.then(handleDataSecuritySigned(i))
+			);
+		}
+
+		$.whenAll(requests).then(function(){
+			deferred.resolve(memberData);
+		});
+
+		return deferred;
+	};
+
+	var convertPositionToPerson = function(pos) {
+		// positions without person are filtered
+		if(!pos.person) return;
+
+		var person = pos.person;
+		person.position = pos;
+		this[person.id] = person;
+	};
+
+	var makeLink = function(text, link){
+		var a = document.createElement('a');
+		a.href = link;
+		a.textContent = text;
+		return a;
+	};
+
+	var convertPersonToTableEntry = function(person) {
+		person.first_name = makeLink(person.first_name, '/#/people/'+person.id);
+		person.last_name = makeLink(person.last_name, '/#/people/'+person.id);
+		person.email = makeLink(person.email, 'mailto:'+person.email);
+		person.team = person.position && person.position.team && person.position.team.title ? person.position.team.title : '-';
+		person.jd = person.position.name;
+		person.dataSecuritySigned = person.dataSecuritySigned ? "Ja" : "Nein";
+		person.phone = person.contact_info && person.contact_info.phone ? person.contact_info.phone : '-';
+		person.end_date = expa.formatDate(person.position.end_date);
+		person.fieldOfStudy = person.academic_experiences
+			&& person.academic_experiences.length > 0
+			? person.academic_experiences[0].backgrounds[0].name : '-';
+		person.startOfStudy = person.academic_experiences
+			&& person.academic_experiences.length > 0 
+			? expa.formatDate(person.academic_experiences[0].start_date) : '-';
+		return person;
+	};
+
+	/**
+	 * Angular Part
+	 */
+
+	var controller = function($scope, termData) {
+		var tmp = [];
+		for (var i in termData) {
+			tmp.push(convertPersonToTableEntry(termData[i]));
+		}
+		document.querySelector('sortable-table')
+		.setHeader({
+			team: "Team",
+			first_name : "First Name",
+			last_name : "Last Name",
+			email : "Email",
+			phone : "Phone", 
+			jd : "JD",
+			dob: "Birthday",
+			fieldOfStudy: "Field of study",
+			startOfStudy: "Start of study",
+			dataSecuritySigned: "Data Security Statement signed?",
+			end_date: "End Date"
+		})
+		.render(tmp);
+	};
+
+	var newState = {
+		state: 'committee.list.term',
+        config: {
+            url: '/term/{termId}',
+            views: {
+            	'term': {
+            		templateUrl: 'committee-list-term',
+            		controller: controller,
+            	}
+            },
+            resolve: {
+    			'termData': getTermData
+    		}
+        }
+	};
+
+	tim.addState(newState);
+
+})(aigTim, jQuery);
+</script>

@@ -1,0 +1,38 @@
+<template id="links-in-new-window-button">
+	<a class="ai-op-quality">
+		<ul>
+			<li class="content">
+				<p class="pad-left pad-right">
+					<span>Open links in new window</span>
+				</p>
+			</li>
+		</ul>
+	</a>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+		function openOpportunity(e){
+			var url = '//' + tim.helper.get('$location').host() + $(e.currentTarget).attr('href');
+			window.open(url, '_blank');
+			e.preventDefault();
+		}
+
+		function addOpportunitiesListener(){
+			$('.opportunity-list').on('click', 'li', openOpportunity);
+		}
+
+		function linksInNewWindow() {
+			var btn = tim.template.get('#links-in-new-window-button');
+			$(btn).find('a').click(addOpportunitiesListener);
+			$('.toggles').append(btn);
+		}
+
+		tim.script.add({
+			name: "linksInNewWindow",
+			route: "https://aiesec.org/programmes/.*",
+			script: linksInNewWindow
+		});
+
+	})(aigTim, jQuery);
+</script>

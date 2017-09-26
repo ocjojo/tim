@@ -1,0 +1,50 @@
+<script type="text/javascript">
+	(function(tim, $){
+
+	var committeeNav = function(utility){
+		tim.find('.profile-nav').then(function(nav){
+
+			var scope = angular.element(nav).scope();
+			var navItems = scope.vm.navItems;
+
+			scope.$apply(function(){
+				// add teams Button
+				if(!utility.arrayContains(navItems, 'state', 'committee.teams')) {
+					navItems.push({
+						state: 'committee.teams',
+						title: 'Teams',
+						privs: ''
+					});
+				}
+
+				// add list Button
+				if(!utility.arrayContains(navItems, 'state', 'committee.list')) {
+					navItems.push({
+						state: 'committee.list',
+						title: 'List',
+						privs: ''
+					});
+				}
+
+				// add analytics Button
+				if(!utility.arrayContains(navItems, 'state', 'committee.analytics')) {
+					navItems.push({
+						state: 'committee.analytics',
+						title: 'Analytics',
+						privs: ''
+					});
+				}
+			});
+
+		});
+
+	};
+
+	tim.script.add({
+		name: 'committeeNav',
+		route: 'https://experience.aiesec.org/#/committees/(.*)',
+		script: committeeNav
+	});
+
+	})(aigTim, jQuery);
+</script>

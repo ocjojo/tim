@@ -1,0 +1,38 @@
+<style>
+</style>
+<template id="opportunities-applications-extra-dropdown">
+	<a ng-click="toggleDropdown()" class="opportunities-applications-extra-dropdown dropdown-link  programme">More actions</a> &nbsp;
+	<ul ng-click="toggleDropdown()" class="opportunities-applications-extra-dropdown-actions dropdown-menu actions reject">
+		<li>
+			<a ng-click="download()" class="archived status">Download</a>
+		</li>
+	</ul>
+</template>
+<script>
+(function(tim, $){
+
+	var download = function(){
+		var opportunitiesApplications = angular.element($('main')).scope().vm.applications;
+		tim.helper.get('utility').downloadCSV({
+			filename: 'opportunities-applications.csv',
+			data: opportunitiesApplications
+		});
+	};
+
+    var main = function(){
+    	var dropdown = tim.template.get('#opportunities-applications-extra-dropdown').compile();
+		$(dropdown).insertBefore("a.dropdown-link.programme");
+		dropdown.scope.toggleDropdown = function(){
+			document.querySelector('.opportunities-applications-extra-dropdown-actions').classList.toggle('block');
+		};
+		dropdown.scope.download = download;
+    };
+
+	tim.script.add({
+		name: 'opportunities-applications-download',
+		route: 'https://experience.aiesec.org/#/opportunities/applications',
+        script: main
+	});
+	
+})(aigTim, jQuery);
+</script>

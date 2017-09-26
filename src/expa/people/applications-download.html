@@ -1,0 +1,34 @@
+<style>
+</style>
+<template id="applications-extra-dropdown-download">
+	<li>
+		<a ng-click="download()" class="archived status">Download</a>
+	</li>
+</template>
+<script>
+(function(tim, $){
+
+	var download = function(){
+		var applications = angular.element($('main')).scope().vm.applications;
+		tim.helper.get('utility').downloadCSV({
+			filename: 'applications.csv',
+			data: applications
+		});
+	};
+
+    var main = function(){
+    	tim.find('.dropdown-menu.actions').then(function(el){
+			var button = tim.template.get('#applications-extra-dropdown-download').compile();
+			$(button).appendTo(el);
+			button.scope.download = download;
+		});
+    };
+
+	tim.script.add({
+		name: 'applications-download',
+		route: 'https://experience.aiesec.org/#/people/applications',
+        script: main
+	});
+	
+})(aigTim, jQuery);
+</script>

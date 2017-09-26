@@ -1,0 +1,19 @@
+<style>
+</style>
+<template>
+</template>
+<script>
+(function(tim, $){
+
+    var main = function(expa) {
+        $("<div style='color:white;'>token: "+expa.getAccessToken()+"</div>").insertAfter($('body'));
+    };
+
+	tim.script.add({
+		name: 'EXPA Token',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/.*',
+        script: main
+	});
+	
+})(aigTim, jQuery);
+</script>

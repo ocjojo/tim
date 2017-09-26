@@ -1,0 +1,622 @@
+<style>
+.btn-save-flight{
+	cursor: pointer!important;
+	color:white;
+  padding: 3px 15px;
+	background-color: #037ef3;
+	border: none!important;
+	border-radius: 0;
+	font-weight: 300;
+  display: inline-block;
+	margin-bottom: 0;
+  font-size: 14px;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  user-select: none;
+  background-image: none;
+}
+.btn-save-flight:hover{
+	background-color: #0257a7;
+	color: #fff;
+	box-shadow: 0 3px 6px rgba(0,0,0,.16), 0 3px 6px rgba(0,0,0,.23);
+}
+.btn-contract{
+	cursor: pointer!important;
+	color:white;
+  padding: 3px 15px;
+	background-color: #037ef3;
+	border: none!important;
+	border-radius: 0;
+	font-weight: 300;
+  display: inline-block;
+	margin-bottom: 0;
+  font-size: 14px;
+  line-height: 1.42857143;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  user-select: none;
+  background-image: none;
+}
+.btn-contract:hover{
+	background-color: #0257a7;
+	color: #fff;
+	box-shadow: 0 3px 6px rgba(0,0,0,.16), 0 3px 6px rgba(0,0,0,.23);
+}
+.input-contract{
+  border: 1px solid #037ef3;
+	padding-left: 5px;
+	font-size: 16px;
+  font-weight: 300;
+	color: #037ef3;
+}
+.popup-content{
+	width: 550px;
+	margin: 100px auto;
+	border-radius: 0;
+	box-shadow: none;
+	border: none;
+}
+.popup-header{
+	padding: 20px;
+	border-bottom: 0;
+	text-align: center;
+	background-color: #037ef3;
+	color: #fff;
+	position: relative;
+	font-size: 20px;
+	font-weight: 300;
+}
+.popup-emoji{
+	position: absolute;
+	bottom: 0;
+	left: 46.5%;
+	font-size: 22px;
+	top: 50px;
+	color: #037ef3;
+	background: #fff;
+	width: 33px;
+	line-height: 33px;
+	text-align: center;
+	height: 33px;
+	border-radius: 50%;
+	border: 1px solid #037ef3;
+}
+.popup-text{
+	position: relative;
+	padding: 30px 15px;
+	text-align: center;
+	font-size: 18px;
+}
+</style>
+<template id="popup-address">
+	<div aria-hidden="true" aria-labelledby="mySmallModalLabel" bsmodal="" class="modal error-modal fade in show" role="dialog" tabindex="-1">
+		<div class="modal-dialog modal-sm">
+			<div  class="modal-content popup-content">
+				<div  class="modal-header popup-header">
+					<h4 class="modal-title">Oops!</h4>
+					<div class="emoji popup-emoji"> 😅 </div>
+				</div>
+				<div class="modal-body popup-text">
+					<p>You did not fill the addrees in your profile, yet. You need to do this to be able to sign the contract.</p>
+					<br >
+					<br >
+					<p class="small-text">
+						<span >Go there to fill it</span>
+						<span ><a  class="link-text" href="https://aiesec.org/profile/edit" target="_blank">now</a></span>
+					</p>
+				</div>
+				<div  class="modal-footer" style="text-align: center;">
+					<button  class="btn btn-slim btn-blue btn-close" type="button">OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+<template id="popup-name">
+	<div aria-hidden="true" aria-labelledby="mySmallModalLabel" bsmodal="" class="modal error-modal fade in show" role="dialog" tabindex="-1">
+		<div class="modal-dialog modal-sm">
+			<div class="modal-content popup-content">
+				<div class="modal-header popup-header">
+					<h4 class="modal-title">Oops!</h4>
+					<div class="emoji popup-emoji"> 😅 </div>
+				</div>
+				<div class="modal-body popup-text">
+					<p class="popup-text-replace">You did not write your full name. Please write it as {{full_name}}.</p>
+					<br >
+					<br >
+					<p  class="small-text"></p>
+				</div>
+				<div  class="modal-footer" style="text-align: center;">
+					<button  class="btn btn-slim btn-blue btn-close" type="button">OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+<template id="contract-wrapper">
+	<div class="contract">
+		<div class="panel panel-default">
+			<div class="panel-heading contract-heading">
+				Contract
+			</div>
+			<div class="panel-body">
+				<div class="an-description">
+					<div >
+						<p class="blue-text text-center heading-text">
+							Please sign the contract with AIESEC in Germany and accept the AGB
+						</p>
+						<p >
+							You need to sign this. You’re about to be a step closer to a life changing experience with AIESEC. Please read the contract below, sign your name, and click to agree or disagree.
+						</p>
+						<hr >
+						<p >
+							<b>Vertrag über Praktikumsvermittlung ins Ausland</b>
+						</p>
+						<br >
+						<p >
+							zwischen
+						</p>
+						<br />
+						<p class="contractText">
+
+						</p>
+
+					</p>
+					<p >
+						<a style="color:#037ef3!important;" target="_blank" href="https://myxponline.aiesec.de/documents/XPP.pdf">XPP</a>
+						<br />
+						<a style="color:#037ef3!important;" target="_blank" href='https://agb.aiesec.de/2017-17-05.pdf'>AGB</a><br /><br />
+						Sincerely,
+					</p>
+					<div class="">
+						<input style="width:40%!important" class="input-contract" placeholder="Your name" style="padding-left:5px; width:100% !important;" type="text">
+					</div>
+					<div class="">
+						<button class="btn-contract" value="sign">Sign</button>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</template>
+<template id="contract-signed-wrapper">
+	<div class="contract-signed">
+		<div class="panel panel-default">
+			<div class="panel-heading contract-heading">
+				Contract
+			</div>
+			<div class="panel-body">
+				<div class="an-description">
+					<div >
+						<p class="contract-signed-text">
+							Contract has been signed. You are on track with your internship. You can download the documents below.
+						</p>
+						<p >
+							<a style="color:#037ef3!important;" target="_blank" href="https://myxponline.aiesec.de/documents/XPP.pdf">XPP</a>
+							<br />
+							<a style="color:#037ef3!important;" class="contract-link" target="_blank" href="#">Contract</a>
+							<br />
+							<a style="color:#037ef3!important;" target="_blank" href='https://agb.aiesec.de/2017-17-05.pdf'>AGB</a><br /><br />
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+<template id="flightdate-wrapper">
+	<div class="flightdate">
+		<div class="panel panel-default">
+			<div class="panel-heading flightdate-heading">
+				Flight Date
+			</div>
+			<div class="panel-body">
+				<div class="an-description">
+					<div >
+						<p class="flightdate-text">
+							Below you can enter your flight and return date, so we can be there for you, once you get back!
+						</p>
+						<span>
+							Flight Date: <input class="flightDateTo" type="date" />
+						</span>
+						<span>
+							Return Date: <input class="flightDateFrom" type="date" />
+						</span>
+						<span>
+							<button class="btn-save-flight">Save Flight Dates</button>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+
+		var noob = tim.helper.get('noob'),
+		expa = tim.helper.get('expa');
+		var flightDate = function(application){
+			var applicationID = $(location).attr('href').split("/").pop();
+			expa.get("applications/"+applicationID+".json").then(function(el){
+				var application = el;
+				var template = tim.template.get('#flightdate-wrapper').compile();
+				$.when($('.lda').before($(template))).then(function(){
+						//get the flight dates
+						var personId = application.person.id;
+						noob.get("people/"+personId+"/exchanges",{
+							"applicationID":applicationID
+						},true).then(function(el){
+							//get flight dates
+							console.log(el.payload[0]);
+							var exchangeId = el.payload[0].id;
+							var flightDateTo = new Date (el.payload[0].flightDateTo);
+							var flightDateFrom = new Date (el.payload[0].flightDateBack);
+							var startOfTime = new Date("01.01.1970");
+							if(startOfTime < flightDateTo){
+								//then something is saved in the database and show it
+								var day = ("0" + flightDateTo.getDate()).slice(-2);
+								var month = ("0" + (flightDateTo.getMonth() + 1)).slice(-2);
+								var date = flightDateTo.getFullYear()+"-"+(month)+"-"+(day) ;
+								$(".flightDateTo").val(date);
+							}
+							if(startOfTime < flightDateFrom){
+								//then something is saved in the database and show it
+								var day = ("0" + flightDateFrom.getDate()).slice(-2);
+								var month = ("0" + (flightDateFrom.getMonth() + 1)).slice(-2);
+								var date = flightDateFrom.getFullYear()+"-"+(month)+"-"+(day) ;
+								$(".flightDateFrom").val(date);
+							}
+							$(".btn-save-flight").bind("click",function(el){
+								var flightDateTo = $(".flightDateTo")[0].value;
+								if(flightDateTo == ""){
+									flightDateTo = "0000-00-00";
+								}
+								var flightDateBack = $(".flightDateFrom")[0].value;
+								if(flightDateBack == ""){
+									flightDateBack = "0000-00-00";
+								}
+								console.log(exchangeId);
+								noob.patch("people/"+personId+"/exchanges/"+exchangeId+".json",{
+									"flightDateTo":flightDateTo,
+									"flightDateBack":flightDateBack}
+									).then(function(el){
+										console.log(el,"success");
+									});
+								});
+						});
+					});
+
+			});
+		}
+		var main = function(){
+			console.log("Hello");
+			//get application ID
+			var applicationID = $(location).attr('href').split("/").pop();
+			//var applicationID = 3076325;
+			//get current application
+			expa.get("applications/"+applicationID+".json").then(function(el){
+				//check where the person currently is then show the contract
+				var application = el;
+				//check if person is matched, sometimes person is approved before signing contract, also after signing the contract it still needs to be shown for download
+				var status = application.current_status;
+				if(application.an_signed_at == null){
+					//console.log("an not signed");
+					return;
+				}
+				//console.log("hello");
+				//console.log("status", status,application);
+				if(status == "matched" || status == "accepted" || status == "approved" || status == "realized" || status == "completed" || status == "approved_tn_manager" || status == "approved_ep_manager"){
+					//console.log("show contract");
+					//check if an is signed
+					//check if contract has already been signed
+					var personId = application.person.id;
+					//check if person exisits on NOOB
+					noob.get("people",{
+						"email":application.person.email
+					}).then(function(el){
+						var person = el;
+						var length = person.totalItems;
+						if(length == 0){
+							createPerson(personId,application.person.email);
+						}
+					});
+					//get exchange
+					noob.get("people/"+personId+"/exchanges", {
+						"applicationID":applicationID
+					},true).then(function(el){
+						var exchange = el;
+						//console.log(exchange);
+						var length = exchange.totalItems;
+						if(length == 0){
+							//create exchange object
+							createExchange(application,personId);
+						}
+						else{
+							//if checking pricing here, then we don't need to check whether application object exists
+							//check if AGB has been signed
+							var exchangeObject = exchange.payload[0];
+							pricing = getPricing(application,exchangeObject);
+							var links = exchangeObject._links;
+							if(links == undefined || links.agbAgreement == undefined){
+								var full_name = application.person.full_name;
+								var opportunityId = application.opportunity.id;
+								//console.log(application);
+								var addressInfo = application.person.address_info;
+								var lc = "AIESEC in "+application.person.home_lc.name;
+								var date = tim.helper.get('time').formatDate( new Date());
+								var data = {
+									"applicationID":application.id,
+									"pricing":pricing,
+									"full_name":full_name,
+									"opportunityId":opportunityId,
+									"address":"",
+									"lc":lc,
+									"date":date,
+									"epid":application.person.id,
+									"street": "",
+									"zip": "",
+									"city": "",
+									"country": "",
+									"address": "",
+									"amount":pricing
+								};
+
+								if(addressInfo == null || addressInfo.address_1 == null || addressInfo.postcode == null || addressInfo.country == null || addressInfo.city == null){
+									data.address = "";
+								}
+								else{
+									data.address = addressInfo.address_1+"<br />"+addressInfo.postcode+"<br />"+addressInfo.city+"<br />"+addressInfo.country;
+									data.street = addressInfo.address_1;
+									data.zip = addressInfo.postcode;
+									data.city = addressInfo.city;
+									data.country = addressInfo.country;
+								}
+
+								//show template
+								setTimeout(function () {
+									var template = tim.template.get('#contract-wrapper').compile();
+									$('.actionables-flex').prepend($(template));
+									//console.log(template);
+									var contractText = '<b>'
+									+full_name+
+									'</b><br />(im Folgenden “Exchange Participant (EP)” genannt<br /><b>'
+									+data.address+
+									'</b><br /><br />und<br /><br />Deutsches Komitee der AIESEC e.V., '
+									+lc+
+									'<br />(im Folgenden “AIESEC” genannt)<br />Mit der Zusage des EPs (“Bestätigung der Acceptance Note”) hat der EP das angebotene Praktikum <b>'
+									+opportunityId+
+									'</b> verbindlich angenommen. AIESEC verpflichtet sich dazu, die Annahmeerklärung des EP an die zuständige Stelle weiterzuleiten und den EP bei der weiteren Vorbereitung auf das Praktikum, während des Praktikums sowie nach der Rückkehr ins Heimatland in Bezug auf kulturelle Nachbereitung zu unterstützen.<br />Der EP verpflichtet sich dazu, innerhalb von vierzehn Tagen den Kostenbeitrag in Höhe von<br /><br /><b><p class="pricing">'
+									+pricing+
+									'€</p><br />auf das Bankkonto des Lokalkomitees zu überweisen. Erst mit Eingang des Kostenbeitrags wird die Nominierung endgültig.<br />Der EP versichert, dass alle von ihm gemachten Angaben der Wahrheit entsprechen und er voll geschäftsfähig ist.<br />Bestandteil dieses Vertrags sind die Allgemeinen Geschäftsbedingungen des Deutschen Komitees der AIESEC e.V. sowie die Exchange Programme Policies (XPP) von AIESEC International.<br /><br />Der Vertragsschluss erfolgte am <b>'
+									+date+'</b> im Internet mit Annahme der Praktikumsstelle.'+'<p>Mit dem Unterzeichnen des Vertrages werden auch den XPP und den AGB hinzugestimmt</p>';
+									$.when($(".contractText").append($(contractText))).then(buttonFunction(data));
+								}, 500);
+
+							}
+							else{
+								contractExists();
+								flightDate();
+							}
+						}
+					});
+				}
+			});
+}
+var buttonFunction = function(data){
+	var address = data.address;
+	$(".btn-contract").bind("click",function(el){
+		data.amount = $(".pricing")[0].innerHTML.split("€")[0];
+				//get the input-contract
+				var inputName = $(".input-contract").val();
+				var full_name = data.full_name;
+				//for now the address will be blank!!!
+				var address = " ";
+				data.address_1 = " ";
+				data.postcode = " ";
+				data.city = " ";
+				data.country = " ";
+				if(address == ""){
+
+					var template = tim.template.get('#popup-address').compile();
+					$('body').prepend($(template));
+					$(".btn-close").bind("click",function(){
+						$(".error-modal").remove();
+					});
+					return;
+				}
+				else if(inputName != full_name){
+					var template = tim.template.get('#popup-name').compile();
+					$('body').prepend($(template));
+					$(".popup-text-replace")[0].innerHTML=$(".popup-text-replace")[0].innerHTML.replace("undefined", full_name);
+					$(".btn-close").bind("click",function(){
+						$(".error-modal").remove();
+					});
+					return;
+				}
+				else{
+					var test = {
+						dateSigned: expa.formatDate(new Date()),
+						applicationID: data.applicationID,
+						epid:data.epid,
+						epname:full_name,
+						street: data.address_1,
+						zip: data.postcode,
+						city: data.city,
+						country: data.country,
+						lc: data.lc,
+						tnid: data.opportunityId,
+						amount: data.amount,
+						contractdate: tim.helper.get('time').formatDate(new Date())
+					};
+					//data.applicationID = 1610384; //debug
+					noob.post('agbAgreements', {
+						dateSigned: expa.formatDate(new Date()),
+						applicationID: data.applicationID,
+						epid:data.epid,
+						epname:full_name,
+						street: data.address_1,
+						zip: data.postcode,
+						city: data.city,
+						country: data.country,
+						lc: data.lc,
+						tnid: data.opportunityId,
+						amount: data.amount,
+						contractdate: tim.helper.get('time').formatDate(new Date())
+					}).then(function(el){
+					//location.reload();
+					contractExists();
+					$(".contract").remove();
+
+				});
+				}
+
+			});
+}
+var contractExists = function(){
+	var template = tim.template.get('#contract-signed-wrapper').compile();
+	$('.actionables-flex').prepend($(template));
+	var applicationID = $(location).attr('href').split("/").pop();
+			//var applicationID = 3076325;
+			//get the contract
+			expa.get("applications/"+applicationID+".json").then(function(el){
+				var personId = el.person.id;
+				noob.get("people/"+personId+"/exchanges", {
+					"applicationID":applicationID
+				},true).then(function(el){
+					var exchangeId = el.payload[0].id;
+					noob.get("agbAgreements",{
+						"exchange":exchangeId
+					},true).then(function(el){
+						var contractPdf = el.payload[0].contractPdfUrl;
+						if((contractPdf == "" || contractPdf == null) && $(".contract-signed-text").length != 0){
+							$(".contract-signed-text")[0].innerHTML=$(".contract-signed-text")[0].innerHTML.replace("Contract", "AGB");
+							$(".contract-heading")[0].innerHTML=$(".contract-heading")[0].innerHTML.replace("Contract", "AGB");
+							$(".contract-link").remove();
+
+						}
+						else{
+							$(".contract-link").attr("href",tim.config.finance.base+contractPdf);
+						}
+					});
+				});
+			});
+
+		}
+		function waitForElementToDisplay(programFee) {
+			if($(".contractText")[0] != undefined) {
+				$(".contractText")[0].innerHTML=$(".contractText")[0].innerHTML.replace("undefined", programFee);
+				return;
+			}
+			else {
+				setTimeout(function() {
+					waitForElementToDisplay(programFee);
+				}, 500);
+			}
+		}
+		var getPricing = function(application,exchangeObject){
+			//checking if something exists in noob
+			var personId = application.person.id;
+			var applicationID = application.id;
+			//getting the fee from the exchange object
+			if(exchangeObject == undefined){
+				return;
+			}
+			var programFee = exchangeObject.feeAmount;
+			if(programFee != null){
+				waitForElementToDisplay(programFee)
+				return programFee;
+			}
+
+
+			var program = application.opportunity.programmes.id;
+			var personId = application.person.id;
+			//get the fee
+			var fees = application.person.programme_fees;
+			for(var fee in fees){
+				if(fees[fee].programme_id == program){
+					programFee = fees[fee].fee;
+				}
+			}
+			//get the internship number
+			expa.get("people/"+personId+".json").then(function(el){
+				//check status of application
+				var applicationStatus = application.status;
+				//console.log(application);
+				if(applicationStatus == "approved"){
+					//if this status is approved and the contract has not been signed, yet it can produce a bug, that might happen often
+
+				}
+				else{
+					var person = el;
+					var programmes = person.programmes;
+					var secondInternship = 1;
+					for(program in programmes){
+						if(programmes[program].id == 1 || programmes[program].id == 2 || programmes[program].id == 5){
+							secondInternship = 2;
+						}
+					}
+
+
+					if(secondInternship == 2){
+						if(programFee == 500){
+							programFee = 330;
+						}
+						else{
+							programFee = 230;
+						}
+					}
+				}
+				waitForElementToDisplay(programFee)
+				return programFee;
+			});
+
+		}
+		var createPerson = function(personId,personMail){
+			noob.post("people",{
+				"id":personId,
+				"email":personMail,
+				"leadSource":"ops"
+			}).then(function(el){
+				location.reload();
+			});
+		};
+		var createExchange = function(application,personId){
+			//get the opportunity program
+			var person = application.person;
+			var programmes = person.programmes;
+			var secondInternship = 1;
+			for(program in programmes){
+				if(programmes[program].id == 1 || programmes[program].id == 2 || programmes[program].id == 5){
+					secondInternship = 2;
+				}
+			}
+			var programFee = getPricing(application);
+				//var applicationID = 635289; // debug
+				var applicationID = application.id;
+				noob.post("people/"+personId+"/exchanges", {
+					"applicationID":applicationID,
+					"feeAmount":programFee,
+					"internshipNumber":secondInternship,
+					"matchBreak":0
+				}).then(function(el){
+					location.reload();
+					//console.log(el);
+				});
+			}
+
+			tim.script.add({
+				name: "signAgb2",
+				route: "https://aiesec.org/profile/applications/[0-9]+",
+				script: main
+			});
+
+		})(aigTim, jQuery);
+</script>

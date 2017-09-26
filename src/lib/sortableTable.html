@@ -1,0 +1,166 @@
+<style>
+	sortable-table {
+		display: block;
+		max-width: 100%;
+		overflow-x: auto;
+	}
+	thead th {
+		cursor: pointer;
+	}
+</style>
+
+<template id="sortable-table">
+	<table class="sortable-table">
+		<thead>
+			<tr></tr>
+		</thead>
+		<tbody></tbody>
+	</table>
+</template>
+
+<script>
+	(function(){
+		var renderedElement,
+			documentRoot = document._currentScript.ownerDocument ? document._currentScript.ownerDocument //for polyfill
+				: document.currentScript.ownerDocument, 
+			proto = Object.create(HTMLElement.prototype),
+			tableHeader,
+			sortBy;
+
+		proto.setHeader = function(header){
+			tableHeader = header;
+			return this;
+		};
+
+		proto.render = function(data) {
+			renderedElement = this;
+
+			if(!Array.isArray(data)) {
+				var tmp = [];
+				for(var i in data) {
+					tmp.push(data[i]);
+				}
+				data = tmp;
+			}
+
+			renderedElement.data = data;
+
+			var template = document.importNode(
+				documentRoot.querySelector('#sortable-table').content, true);
+			renderedElement.appendChild(template);
+
+			renderHeader();
+			renderBody();
+			return this;
+		};
+
+		var renderHeader = function() {
+			var sortBy = getSortBy(),
+				header = getHeader(),
+				tr = renderedElement.querySelector('thead tr');
+
+			for(var prop in header) {
+				var th = document.createElement('th');
+				th.textContent = header[prop];
+				th.prop = prop;
+				if(sortBy == prop) th.classList.add('sorted-by');
+				tr.appendChild(th);
+			}
+
+			tr.addEventListener('click', sortTable);
+		};
+
+		var renderBody = function() {
+			var sortBy = getSortBy();
+
+			var sortFunction = getSortFunction(renderedElement.data[0][sortBy]);
+
+			renderedElement.data.sort(function(a, b){
+				return sortFunction(a[sortBy], b[sortBy]);
+			});
+
+			//append data
+			var header = getHeader();
+			var tbody = renderedElement.querySelector('tbody');
+			tbody.innerHTML = "";
+			for(var i in renderedElement.data) {
+				var tr = document.createElement('tr');
+				var row = renderedElement.data[i];
+				tr.data = row;
+				for(var prop in header){
+					var td = document.createElement('td');
+					if(row[prop] && typeof row[prop].innerHTML == 'string') {
+						td.appendChild(row[prop]);
+					} else if(row[prop]) {
+						td.innerHTML = row[prop];
+					}
+					tr.appendChild(td);
+				}
+				tbody.appendChild(tr);
+			}
+		};
+
+		var getHeader = function() {
+			// Guess Properties for Header from data, if not defined
+			if(!tableHeader) {
+				tableHeader = {};
+
+				for(var prop in renderedElement.data[0]){
+					if(renderedElement.data[0][prop]
+						&& (typeof renderedElement.data[0][prop] == 'string'
+						|| typeof renderedElement.data[0][prop] == 'number'
+						|| typeof renderedElement.data[0][prop].innerHTML == 'string'))
+					tableHeader[prop] = prop.charAt(0).toUpperCase() + prop.slice(1);
+				}
+
+			}
+			return tableHeader;
+		};
+
+		var getSortBy = function() {
+			if(!sortBy) {
+				for(sortBy in getHeader()) break;
+			}
+			return sortBy;
+		};
+
+		var sortTable = function(e) {
+			if(!e.target.matches('th:not(.sorted-by)') || !e.target.prop) return;
+			sortBy = e.target.prop;
+			renderedElement.querySelector('th.sorted-by').classList.remove('sorted-by');
+			e.target.classList.add('sorted-by');
+			renderBody();
+		};
+
+		var getSortFunction = function(data) {
+			if(!data || typeof data == "string")
+				return sortString;
+			else if(typeof data.textContent == "string")
+				return sortHtml;
+			else if(typeof data == "number")
+				return sortNumber;
+		};
+
+		var sortNumber = function(a, b){
+			return a - b;
+		};
+
+		var sortString = function(a, b){
+			if(!a) return 1;
+			if(!b) return -1;
+			//ignore case
+			var aUpper = a.toUpperCase(),
+				bUpper = b.toUpperCase();
+			if(aUpper < bUpper) return -1;
+			if(aUpper > bUpper) return 1;
+			return 0;
+		};
+
+		var sortHtml = function(a, b) {
+			return sortString(a.textContent, b.textContent);
+		};
+
+		document.registerElement('sortable-table', {prototype: proto});
+
+	})();
+</script>

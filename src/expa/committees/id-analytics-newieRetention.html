@@ -1,0 +1,247 @@
+<style>
+	#retention-input input {
+		width: auto;
+	}
+</style>
+<template type="text/ng-template" id="tim-analytics-newie-retention">
+	<div id="retention-input">
+		von <input type="date" name="fromDate" ng-model="fromDate">
+		bis <input type="date" name="toDate" ng-model="toDate">
+		Zeitraum <input type="number" name="range" ng-model="range">
+		<span ng-click="reload()" class="btn">reload</span>
+	</div>
+	<div id="retention-table">
+		<table>
+			<tr ng-if="isNational">
+                <td class="productivityCell">LC</td>
+                <td class="productivityCell" ng-repeat="row in table[0]" colspan="3">{{row.range}}</td>
+            </tr>
+			<tr ng-if="isNational">
+                <td class="productivityCell"></td>
+              	<td ng-repeat-start="cell in table[0]">#Newies gained</td>
+                <td>#Newies resigned</td>
+                <td class="productivityCell" ng-repeat-end>Retention Rate</td>
+            </tr>
+            <tr ng-if="isNational" ng-repeat="row in table">
+                <td class="productivityCell">{{row[0].lcName}}</td>	
+                <td ng-repeat-start="cell in row">{{cell.gained}}</td>
+                <td>{{cell.resigned}}</td>
+                <td class="productivityCell" ng-repeat-end>{{cell.retention}}</td>
+            </tr>
+
+			<tr ng-if="!isNational">
+				<th>Range</th>
+				<th># Newies gained</th>
+				<th># Newies resigned</th>
+				<th>Retention rate</th>
+			</tr>
+			<tr ng-if="!isNational" ng-repeat="row in rows">
+				<td>{{row.range}}</td>
+				<td>{{row.gained}}</td>
+				<td>{{row.resigned}}</td>
+				<td>{{row.retention}}</td>
+			</tr>
+		</table>
+	</div>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+
+		var noob = tim.helper.get('noob'),
+			expa = tim.helper.get('expa'),
+			time = tim.helper.get('time'),
+			fromDate = new Date(),
+			toDate = new Date();
+		fromDate.setDate(fromDate.getDate() - 90);
+	
+
+		var retentionRate = function(gained, resigned) {
+			if(gained === 0 && resigned === 0) return 1;
+			var retention = (gained - resigned) / gained;
+			return retention.toFixed(3);
+		};
+
+		var controller = function($scope, $stateParams) {
+			$scope.fromDate = fromDate;
+			$scope.toDate = toDate;
+			$scope.range = 30;
+			$scope.rows = [];
+			$scope.table = [];
+			$scope.isNational;
+			var committees = {
+				'1596': '[MC] AIESEC in Germany',
+				'713': 'Aachen',
+				'686': 'Augsburg',
+				'1454': 'Bayreuth',
+				'680': 'Berlin HU',
+				'708': 'Berin TU',
+				'664': 'Bielefeld',
+				'1442': 'Bochum',
+				'693': 'Bonn',
+				'678': 'Braunschweig',
+				'665': 'Bremen',
+				'667': 'Darmstadt',
+				'677': 'Dresden',
+				'1448': 'Duesseldorf',
+				'657': 'Frankfurt',
+				'1420': 'Giessen-Marburg',
+				'1415': 'Goettingen',
+				'757': 'Halle',
+				'1523': 'Hamburg',
+				'1441': 'Hannover',
+				'699': 'Heidelberg',
+				'696': 'Jena',
+				'1533': 'Kaiserslautern',
+				'643': 'Karlsruhe',
+				'1438': 'Kiel',
+				'1421': 'Koeln',
+				'1410': 'Leipzig',
+				'1414': 'Lueneburg',
+				'1447': 'Magdeburg',
+				'60': 'Mainz-Wiesbaden',
+				'1520': 'Mannheim',
+				'1394': 'Muenchen',
+				'1484': 'Muenster',
+				'1440': 'Nuernberg',
+				'663': 'Paderborn',
+				'1403': 'Passau',
+				'648': 'Regensburg',
+				'647': 'Stuttgart',
+				'1443': 'Wuerzburg'
+			};
+
+			var validateDates = function() {
+				if(time.isDateInvalid($scope.fromDate)) {
+					tim.popup('From Date is invalid');
+					return true;
+				}
+				if(time.isDateInvalid($scope.toDate)) {
+					tim.popup('To Date is invalid');
+					return true;
+				}
+				if(time.isDateLaterThan($scope.fromDate, $scope.toDate)) {
+					tim.popup('Invalid! From Date is later than To Date');
+					return true;
+				}
+				if(time.isDateLaterThanToday($scope.toDate)) {
+					tim.popup('Invalid! To Date is later than Today');
+					return true;
+				}
+				if(time.isDateLaterThanToday($scope.fromDate)) {
+					tim.popup('Invalid! From Date is later than Today');
+					return true;
+				}
+			}
+
+			var bucket = function(date1, date2) {
+				return Math.floor( time.dayDiff(date1, date2) / $scope.range );
+			};
+
+			var processJds = function(data, name, numberOfBuckets){
+
+				var rows = [],
+					i, //for the loops
+					from = time.addDays(new Date($scope.toDate), -1*$scope.range),
+					to = new Date($scope.toDate);
+
+				for(i = numberOfBuckets - 1; i >= 0 ; i--) {
+					rows[i] = {
+						range: from.toLocaleDateString() + ' - ' + to.toLocaleDateString(),
+						gained: 0,
+						resigned: 0,
+						retention: 1,
+						lcName: name
+					};
+					from = time.addDays(from, -1*$scope.range);
+					to = time.addDays(to, -1*$scope.range);
+				}
+
+				for(i in data.payload) {
+					var jd = data.payload[i];
+
+					//if bucket for startDate
+					var buck = bucket($scope.fromDate, new Date(jd.startDate));
+					if(buck >= 0 && buck < numberOfBuckets) rows[buck].gained++;
+					
+					// continue if jd lifetime is greater than whats counted as newie
+					if(time.dayDiff(jd.startDate, jd.endDate) > 90) continue;
+					
+					//if bucket for endDate
+					buck = bucket($scope.fromDate, new Date(jd.endDate));
+					if(buck >= 0 && buck < numberOfBuckets) rows[buck].resigned++;
+				}
+				// total
+				rows[numberOfBuckets] = {
+					range: 'Total',
+					gained: 0,
+					resigned: 0,
+					retention: 1,
+					lcName: name
+				};
+				for(i = 0; i < numberOfBuckets; i++) {
+					rows[i].retention = retentionRate(rows[i].gained, rows[i].resigned);
+					rows[numberOfBuckets].gained += rows[i].gained;
+					rows[numberOfBuckets].resigned += rows[i].resigned;
+				}
+				rows[numberOfBuckets].retention = retentionRate(rows[numberOfBuckets].gained, rows[numberOfBuckets].resigned);
+				$scope.rows = rows.reverse();
+				$scope.table.push(rows.reverse());
+			};
+
+			$scope.reload = function(){
+				if(validateDates()) return;
+				$scope.table = [];
+				createTable($scope.fromDate, $scope.toDate);
+			};
+
+			var createTable = function(fromDate, toDate) {
+				var numberOfBuckets = bucket($scope.fromDate, $scope.toDate);
+				//set fromTime to next date fitting to the selected range
+				$scope.fromDate = time.addDays(new Date($scope.toDate), -numberOfBuckets * $scope.range);
+				var filter = {
+				limit: 1000,
+				startDateFrom: fromDate.toJSON(),
+				startDateTo: toDate.toJSON(),
+				newies: true
+				};
+
+				if($stateParams.id == '1596') {			//National Overview
+					$scope.isNational = true;
+					$.each(committees, function(committeeId, committeeName) {
+						filter.committeeIds = [committeeId];
+						noob.get('jds', filter).then(function(jds) {
+							processJds(jds, committeeName, numberOfBuckets);
+						})
+					});
+				}
+				else {									//Local Overview
+					$scope.isNational = false;
+					filter.committeeIds = [$stateParams.id];
+					noob.get('jds', filter).then(function(jds) {
+							processJds(jds, expa.getCommitteeById($stateParams.id), numberOfBuckets);
+						})
+				}
+			};
+
+			//initial processing
+			createTable($scope.fromDate, $scope.toDate);
+		};
+
+		var newState = {
+			state: 'committee.analytics.newie-retention',
+            config: {
+                url: '/newie-retention',
+                views: {
+                	'analytics': {
+                		templateUrl: 'tim-analytics-newie-retention',
+                		controller: controller
+                	}
+                }
+            }
+		};
+
+		tim.addState(newState);
+
+	})(aigTim, jQuery);
+</script>

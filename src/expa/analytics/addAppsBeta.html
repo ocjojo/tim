@@ -1,0 +1,18 @@
+<script>
+    (function(tim, $){
+        var expa = tim.helper.get('expa'),
+                noob = tim.helper.get('noob');
+        var main = function(){
+            $('.aig-nav-analytics-appsbeta').remove();
+            $('.nav-analytics > ul').append($('<li class="aig-nav-analytics-appsbeta"><a href="#/analytics/appsbeta">Apps Beta</a></li>'));
+        };
+
+
+        tim.script.add({
+            name: 'Add AppsBeta Button',
+            route: 'https:\/\/experience\.aiesec\.org\/#\/.*',
+            script: main
+        });
+
+    })(aigTim, jQuery);
+</script>

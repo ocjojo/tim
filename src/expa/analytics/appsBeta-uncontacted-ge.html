@@ -1,0 +1,176 @@
+<style>
+
+
+</style>
+<template id="analytics-appsbeta-uncontacted-ge">
+	<div class="wrapper thin aig-container">
+		<div class="analytics-header"><br /><br />
+			<div class="analytics-title">
+				<h1>Contacted EPs <span class="programme ge">ge</span></h1>
+			</div>
+			<div class="analytics-body-text">
+				<div class="statement">Showing a table of all LCs and the number of their contacted EPs</div>
+				</div>
+			</div>
+			<div class="analytics-appsbeta-uncontacted-ge-wrapper">
+	</div>
+	</div>
+</template>
+<template id="analytics-appsbeta-uncontacted-ge-tableheader">
+	<div class="analytics-results-header">
+		<input type="text" id="start-date" style="display:none" />
+		<table class="analytics-table">
+			<thead>
+				<tr>
+					<th class="table-result">LC Name</th>
+					<th class="table-result">Contacted EPs</th>
+				</tr>
+			</thead>
+			<tbody id="analytics-appsbeta-uncontacted-ge-body">
+
+			</tbody>
+		</table>
+	</div>
+</template>
+<template id="analytics-appsbeta-uncontacted-ge-results">
+	<tr>
+		<th class="table-result"><a href="https://experience.aiesec.org/#/opportunities/{{data[0].opportunityId}}">{{data[0].opportunityId}}</a></th>
+		<th class="table-result">{{data[0].name}}</th>
+		<th class="table-result">{{data[0].office}}</th>
+		<th class="table-result">{{data[0].close_date}}</th>
+	</tr>
+</template>
+<script type="text/javascript">
+
+	(function(tim, $){
+		var expa = tim.helper.get('expa'),
+			noob = tim.helper.get('noob');
+		function template() {
+			return tim.template.get('#analytics-appsbeta-uncontacted-ge').getDom().outerHTML;
+		};
+
+		var main = function (){
+			//build table
+			var template = tim.template.get('#analytics-appsbeta-uncontacted-ge-tableheader').compile();
+			$('.analytics-appsbeta-uncontacted-ge-wrapper').append($(template));
+			//get current kw
+			tim.helper.get('ajax').get("https://bookmarks.aiesec.de/v2/kws.php").then(function(el){
+				var kws = JSON.parse(el);
+				for(var i in kws){
+					var date = new Date();
+					var start = new Date(kws[i].start);
+					var end = new Date(kws[i].end);
+					var diff1 = (Math.round((date-end)/(1000*60*60*24)));
+					var diff2 = (Math.round((date-start)/(1000*60*60*24)));
+					var endMonth = Math.round((end.getUTCMonth()+1));
+					var startMonth = Math.round((start.getUTCMonth()+1));
+					var endDay = end.getDate()-1;
+					if(endDay == 0){
+						endDay = 1;
+					}
+					start = start.getDate()+"."+startMonth+"."+start.getUTCFullYear();
+					end = end.getDate()-1+"."+endMonth+"."+end.getUTCFullYear();
+
+					if(diff1 > 0){
+					}
+					else if (diff2 >= 0) {
+						var thisStart = start;
+						var thisEnd = end;
+						$(".statement")[0].innerText = $(".statement")[0].innerText+" in the week "+thisStart+" - "+thisEnd;
+						$("#start-date")[0].value = thisStart;
+						//get all LCs
+						var requests = [];
+						requests.push(
+										expa.get('committees/1596.json', {},false));
+						$.whenAll(requests).done(parseLCs);
+					}
+					else{
+					}
+				}
+			});
+		};
+		var parseLCs = function(){
+			if(arguments[1] != 'success') return;
+			var committees = arguments[0];
+			var thisStart = $("#start-date")[0].value;
+			var suboffices = committees.suboffices;
+			var requests = [];
+			for(suboffice in suboffices){
+				var requests = [];
+				var lcId = suboffices[suboffice].id;
+				var lcName = suboffices[suboffice].name;
+				requests.push(lcName,
+								expa.get('people.json', {
+									"filters[contacted]": true,
+									"filters[home_committee]": lcId,
+									"filters[registered][from]": thisStart,
+									"filters[selected_programmes]":[5]
+
+								},false));
+								$.whenAll(requests).done(loadData);
+
+			}
+		}
+		var loadData = function(){
+				//if(arguments[1] != 'success') return;
+				var j = 0;
+				for(argument in arguments){
+					j++;
+					if(j == 1){
+						var lcName = arguments[argument];
+					}
+					else{
+						j = 0;
+						var i = argument+1;
+
+						var contacted = arguments[argument][0].paging.total_items;
+						console.log(lcName,contacted);
+						$("thead").append($("<tr><th>"+lcName+"</th><th>"+contacted+"</th></tr>"));
+
+					}
+					//
+
+					//
+					//console.log(arguments[argument][2].getResponseHeader());
+					//console.log(arguments[argument][0].paging.total_items);
+				}
+				/*var opportunities = arguments[0];
+				for(var i in opportunities.data) {
+					var opportunity = opportunities.data[i];
+					var appData = {
+						opportunityId: opportunity.id,
+						name: opportunity.title,
+						office: opportunity.location,
+						close_date: opportunity.applications_close_date
+					};
+
+					var template = tim.template.get('#analytics-appsbeta-uncontacted-ge-results').compile();
+					var entries = [];
+					template.scope.data = entries;
+					$('#analytics-appsbeta-uncontacted-ge-body').append($(template));
+					entries.push(appData);
+				}
+				*/
+		};
+
+		function controller($scope, $stateParams) {
+			main();
+		};
+		var newState = {
+			state: 'analytics-appsbeta-uncontacted-ge',
+			config: {
+				url: '/analytics/appsbeta/uncontacted-ge/',
+				views: {
+					'root@': {
+						template: template,
+						controller: controller
+					}
+				}
+			}
+		};
+
+		aigTim.addState(newState);
+
+	})(aigTim, jQuery);
+
+</script>

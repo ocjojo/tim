@@ -1,0 +1,186 @@
+/**
+ * Fix Expa Fuck-Ups
+ */
+
+.filters
+{
+    max-height: calc(100% - 157px)!important;
+}
+.modal-close{
+    cursor: pointer;
+}
+
+
+/***************************************************
+ * Own Styles: General;
+ ***************************************************/
+
+.aig-btn
+{
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+
+    position: fixed;
+    z-index: 10;
+    top: 122px;
+
+    display: inline-block;
+
+    box-sizing: border-box;
+    padding: 4px 6px;
+
+    cursor: pointer;
+    text-align: center;
+    text-transform: uppercase;
+
+    color: #777;
+    border-color: #ddd;
+    border-radius: 4px;
+    background: #ddd;
+}
+
+.aig-container
+{
+    padding-top: 77px;
+}
+
+.aig-container h1
+{
+    font-size: 3rem;
+
+    margin-bottom: 10px;
+}
+.aig-container h2
+{
+    font-size: 2rem;
+}
+
+.aig-container .menu {
+    margin-bottom: 10px;
+}
+
+/***************************************************
+ * teamOverview.html
+ ***************************************************/
+.aig-terms-menu
+{
+    max-width: 200px;
+}
+
+.column .item.active a
+{
+    color: #444;
+}
+.column .item.active a:hover
+{
+    color: #fff;
+}
+.column .subteam
+{
+    position: relative;
+
+    padding-left: 45px;
+}
+.column .subteam .subteam:not(:last-child):before
+{
+    position: absolute;
+    top: -18px;
+    left: -25px;
+
+    width: 1px;
+    height: 100%;
+
+    content: '';
+
+    border-left: 1px solid #ddd;
+}
+.column .team-member
+{
+    position: relative;
+}
+.column .subteam .team-member:before
+{
+    position: absolute;
+    top: -80%;
+    left: -25px;
+
+    width: 25px;
+    height: 130%;
+
+    content: '';
+
+    border-bottom: 1px solid #ddd;
+    border-left: 1px solid #ddd;
+}
+.column .subteam .team-member:first-child:before
+{
+    top: 0;
+
+    height: 50%;
+}
+
+.column .team-member .add
+{
+    font-size: 20px;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+
+    display: none;
+
+    width: 45px;
+    padding-right: 10px;
+
+    text-align: right;
+
+    color: #3692e0;
+    background: linear-gradient(to right, rgba(255,255,255,0) 0%,rgba(255,255,255,1) 25%,rgba(255,255,255,1) 100%);
+
+    align-items: center;
+    justify-content: flex-end;
+}
+.column .team-member:hover .add:not(.hidden)
+{
+    display: flex;
+}
+
+.column[ui-view='position']
+{
+    width: 300px;
+    padding: 10px;
+}
+.column[ui-view='position'] h2
+{
+    font-size: 2rem;
+
+    margin-bottom: 10px;
+}
+.column[ui-view='position'] input
+{
+    margin: 2px 0 10px;
+    padding: 5px;
+}
+
+.column[ui-view='position'] .select2
+{
+    margin: 2px 0 10px;
+}
+
+
+/***************************************************
+ * teamList.html
+ ***************************************************/
+
+sortable-table thead
+{
+    font-weight: bold;
+
+    background-color: #eee;
+}
+sortable-table tbody tr:nth-of-type(even)
+{
+    background: #eee;
+}

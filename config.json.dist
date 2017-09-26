@@ -1,0 +1,13 @@
+{
+	"server": 
+	{
+		"host": "server.com",
+		"user": "ssh-user",
+		"livePath": "/var/www/dir/to/tim/test"
+	},
+	"expa": 
+	{
+		"user": "user@email.com",
+		"password": "secretpassword"
+	}
+}

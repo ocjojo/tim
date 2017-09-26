@@ -1,0 +1,124 @@
+<style>
+	#retention-input input {
+		width: auto;
+	}
+</style>
+<template type="text/ng-template" id="overviewFoBo">
+	
+	<div id="retention-table">
+		<table>
+			<tr>
+				<th>LC</th>
+				<th>Number of Frontoffice</th>
+				<th>Number of Backoffice</th>
+				<th>Ratio FO / BO</th>
+			</tr>
+			<tr ng-repeat="row in rows">
+				<td>{{ row.lc }}</td>
+				<td>{{ row.numberFO }}</td>
+				<td>{{ row.numberBO }}</td>
+				<td>{{ row.ratio }}</td>
+			</tr>
+		</table>
+	</div>
+</template>
+<script>
+(function(tim, $){
+	var noob = tim.helper.get('noob'),
+		expa = tim.helper.get('expa'),
+		time = tim.helper.get('time');
+	
+  
+
+	var controller = function($scope, $stateParams) {
+
+		$scope.rows = processFoBo();
+
+		function processFoBo() {
+
+			var rows = [];
+
+
+			if ($stateParams.id == 1596) {
+
+				
+				noob.get('reports/all/fobo').then(function(data){
+
+					$.each(data, function(index, fobo){
+
+						rows[index] = {
+							lc: '-',
+							numberFO: 0,
+							numberBO: 0,
+							ratio: '-'
+						}; 
+
+						expa.get('committees/' + fobo.committeeId + '.json').then(function(expadata) {
+					
+							rows[index].lc = expadata.name;
+						});
+
+					
+
+			            rows[index].numberFO = parseInt(fobo.oGV) + parseInt(fobo.oGT) + parseInt(fobo.iGT) + parseInt(fobo.REC) + parseInt(fobo.iGV);
+			            rows[index].numberBO = parseInt(fobo.FIN) + parseInt(fobo.TM);
+			            var FoInPercentage = Math.floor(rows[index].numberFO / parseInt(fobo.AllTeams) * 100);
+			            rows[index].ratio = FoInPercentage + '% / ' + (100 - FoInPercentage) + '%'; 
+			       		 
+						
+
+					});
+				});
+			}
+			else {
+				
+				
+
+				rows[0] = {
+							lc: '-',
+							numberFO: 0,
+							numberBO: 0,
+							ratio: '-'
+						}; 
+
+				expa.get('committees/' + $stateParams.id + '.json').then(function(expadata) {
+			
+					rows[0].lc = expadata.name;
+				});
+
+				noob.get('reports/' + $stateParams.id + '/fobo').then(function(data){
+
+	                rows[0].numberFO = parseInt(data[0].oGV) + parseInt(data[0].oGT) + parseInt(data[0].iGT) + parseInt(data[0].REC) + parseInt(data[0].iGV);
+	                rows[0].numberBO = parseInt(data[0].FIN) + parseInt(data[0].TM);
+	                var FoInPercentage = Math.floor(rows[0].numberFO / parseInt(data[0].AllTeams) * 100);
+	                rows[0].ratio = FoInPercentage + '% / ' + (100 - FoInPercentage) + '%'; 
+	       		 
+				});
+
+	         };
+
+	         return rows;
+
+     	};
+
+				
+	};
+
+
+   var newState = {
+			state: 'committee.analytics.overviewFoBo',
+            config: {
+                url: '/overviewFoBo',
+                views: {
+                	'analytics': {
+                		templateUrl: 'overviewFoBo',
+                		controller: controller
+                		}
+                	}
+                }
+            };
+
+		tim.addState(newState);
+	
+})(aigTim, jQuery);
+</script>

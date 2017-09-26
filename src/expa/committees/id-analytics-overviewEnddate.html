@@ -1,0 +1,163 @@
+<style>
+	#retention-input input {
+		width: auto;
+	}
+</style>
+<template type="text/ng-template" id="overview-enddate">
+	<div id="retention-input">
+		von <input type="date" name="fromDate" ng-model="fromDate">
+		bis <input type="date" name="toDate" ng-model="toDate">
+		<span ng-click="reload()" class="btn">reload</span>
+
+	</div>
+	<div id="retention-table">
+		<table>
+			<tr>
+				<th>LC</th>
+				<th>Name</th>
+				<th>Date joined @</th>
+				<th>Date leave @ </th>
+				<th>Reason for leaving</th>
+				<th>Successor JD (Y/N)</th>
+				<th>Exchange Info</th>
+				<th>Team</th>
+				<th>Field of Study</th>
+				<th>Date of Birth</th>
+				<th>Contact</th>
+			</tr>
+			<tr ng-repeat="row in rows | orderBy:'lc'">
+				<td>{{row.lc}}</td>
+				<td>{{row.name}}</td>
+				<td>{{row.dateJoined}}</td>
+				<td>{{row.dateLeave}}</td>
+				<td>{{row.reasonForLeave}}</td>
+				<td >{{row.succesorJd ? "Yes" : "No"}}</td>
+				<td>{{row.exchange}}</td>
+				<td>{{row.team}}</td>
+				<td>{{row.fieldOfStudy}}</td>
+				<td>{{row.dob}}</td>
+				<td>{{row.mail}}</td>
+			</tr>
+		</table>
+	</div>
+</template>
+<script>
+(function(tim, $){
+	var noob = tim.helper.get('noob'),
+			expa = tim.helper.get('expa'),
+			time = tim.helper.get('time'),
+			fromDate = new Date(),
+			toDate = new Date();
+		fromDate.setDate(fromDate.getDate() - 90);
+
+
+		var controller = function($scope, $stateParams, User) {
+			
+			$scope.fromDate = fromDate;
+			$scope.toDate = toDate;
+			$scope.rows = processJds($scope.fromDate, $scope.toDate);
+
+			var validateDates = function() {
+				if(time.isDateInvalid($scope.fromDate)) {
+					tim.popup('From Date is invalid');
+					return true;
+				}
+				if(time.isDateInvalid($scope.toDate)) {
+					tim.popup('To Date is invalid');
+					return true;
+				}
+				if(time.isDateLaterThan($scope.fromDate, $scope.toDate)) {
+					tim.popup('Invalid! From Date is later than To Date');
+					return true;
+				}
+			}
+
+			function processJds (fromDate, toDate) {
+				
+				var rows = [];
+				var filter =  {			
+					limit: 1500,
+					endDateFrom: fromDate.toJSON(),
+					endDateTo: toDate.toJSON()
+				};
+
+				if ($stateParams.id != '1596') {
+					filter.committeeIds = [$stateParams.id];					
+				}
+
+				noob.get('jds', filter).then(function(data){
+					
+
+					$.each(data.payload, function(index, jds){
+						var memberId = jds.memberId;
+						var endDate = new Date(jds.endDate);
+						
+						rows[index] = {
+							lc: expa.getCommitteeById(jds.committeeId),
+							name: '-',
+							dob: '-',
+							dateLeave: endDate.toLocaleDateString(),
+							reasonForLeave: jds.reasonForLeaving,
+							team:  jds.team,
+							succesorJd: jds.successorJd,
+							dateJoined: '-',
+							mail: '-',
+							fieldOfStudy: '-',
+							exchange: 'Nein'
+						};
+
+						
+						
+						expa.get('people/' + memberId + '.json').then(function(expadata) {
+							rows[index].name = expadata.full_name;
+							rows[index].dob = expadata.dob;
+							joinedDate = new Date(expadata.created_at);
+							rows[index].dateJoined = joinedDate.toLocaleDateString();
+							rows[index].mail = expadata.email;
+						});
+
+						
+						noob.get('people/' + memberId + '/applicationInformation').then(function(applicationInfo) {
+							
+							rows[index].fieldOfStudy = applicationInfo.fieldOfStudy;
+						});
+
+						noob.get('people/' + memberId + '/exchanges').then(function(exchangeInfo) {
+							
+							rows[index].exchange = 'Ja';	
+						}); 
+
+					});
+
+				});
+
+				return rows;
+			};
+			
+
+			$scope.reload = function(){
+				if(validateDates()) return;
+				$scope.rows = processJds($scope.fromDate, $scope.toDate);
+			}; 
+
+			
+		};
+
+		
+   var newState = {
+			state: 'committee.analytics.overview-enddate',
+            config: {
+                url: '/overview-enddate',
+                views: {
+                	'analytics': {
+                		templateUrl: 'overview-enddate',
+                		controller: controller
+                	}
+                }
+            }
+		};
+
+		tim.addState(newState);
+	
+})(aigTim, jQuery);
+</script>

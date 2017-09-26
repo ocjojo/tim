@@ -1,0 +1,68 @@
+
+
+<script>
+	(function(tim, $){
+		var expa = tim.helper.get('expa'),
+			noob = tim.helper.get('noob');
+		var main = function(){
+			//get the current block
+
+			tim.find('.action-tn-manager').then(function(manager){
+				var scope = angular.element(".action-tn-manager").scope();
+				tim.wait(scope.vm, "opportunity").then(function(){
+
+					block = $(".action-tn-manager").contents();
+					var scope = angular.element(".action-tn-manager").scope();
+					$(".action-tn-manager").find(".inner").mouseenter(function(){
+						mouseOver();
+					});
+					$(".action-tn-manager").mouseleave(function(){
+						$(".action-tn-manager").empty();
+						$(".action-tn-manager").append($(block));
+						$(".action-tn-manager").find(".inner").mouseenter(function(){
+							mouseOver();
+						});
+					});
+				});
+
+			});
+			//unhides reject block;
+
+			tim.find('[ng-show="$parent.vm.opportunity.permissions.view_applications"]').then(function(applications){
+				var scope = angular.element(applications).scope();
+				tim.wait(scope.vm, "applications").then(function(el){
+					$(".reject").show();
+					$(".action-reject").bind("click",function(el){
+						setTimeout(function () {
+							$(".reject").show();
+							$(".btn.cancel").css("width","25%");
+						}, 100);
+					});
+				});
+			});
+
+
+		};
+		var mouseOver = function(){
+			var managerElement=$("ul.tn-managers");
+			var epManagerElement=$("li.action-tn-manager");
+			var scope = angular.element(".action-tn-manager").scope();
+			//check if country is german
+			if(scope.vm.opportunity.branch.address_info.country == "Germany"){return;}
+			manager = scope.vm.opportunity.managers;
+			$(".action-tn-manager").empty();
+			for(i = 0; i < manager.length; i++) {
+			var name = manager[i].full_name;
+				var mail = manager[i].email;
+				epManagerElement.append("<div style='padding:10px;' class='manager'>"+"<img height='42' style='float:left;width: 35px;height: 35px;background: #fff;border-radius: 1000px;' alt='' class='avatar' src='"+manager[i].profile_photo_url+"'>"+name+"<br /><span style='color:#777;font-size:10pt'>"+mail+"</span></div>");
+			}
+		}
+
+		tim.script.add({
+		name: 'TN Manager Emails',														//name for debugging information
+		route: 'https:\/\/experience\.aiesec\.org\/#\/opportunities\/[0-9]+.*',		//example for a regular Expression to set on which page the script will be executed
+		script: main
+	});
+
+	})(aigTim, jQuery);
+</script>

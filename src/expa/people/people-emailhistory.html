@@ -1,0 +1,121 @@
+<style>
+ .emailName{
+   color:#222;
+ }
+ .emailDate{
+   color: #aaa;
+  font-size: 1.4rem;
+ }
+ .icon{
+   color: #aaa;
+   font-size: 1.4rem;
+ }
+ .material-icons{
+  color: #3c3;
+  font-size: 14pt!important;
+  margin-left: 5px;
+  margin-right: 5px;
+ }
+ .timeline{
+   margin-top:25px;
+ }
+</style>
+<template type="text/ng-template" id="template-emailhistory">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <div class="timeline">
+    <h2>Received Emails from GetResponse</h2>
+    <p style="color:grey;font-size:9pt">
+      Here you find all emails your EP has received through national campaigns. Please note that by the green icons you can see whether an email has been received (dot), opened (letter) and if a link (chain) has been clicked. You can find the email contents <a href="https://od.aiesec.de/leadnurturing" target="_blank">here</a>.
+    </p>
+    <br />
+    <ul class="statuses-list">
+    </ul>
+  </div>
+</template>
+<template id="emailhistory-entry">
+  <li class="done" ng-repeat="email in emailhistory">
+    <span class="emailName ng-binding">{{email.subject}}</span>
+    <span class="emailDate ng-binding">{{email.send.date | date:'HH:mm dd MMM yyyy'}}</span>
+    <span><i class="material-icons">{{email.open.icon}}</i><span class="icon">{{email.open.date | date:'HH:mm dd MMM yyyy'}}</span></span>
+    <span><i class="material-icons">{{email.click.icon}}</i><span class="icon">{{email.click.date | date:'HH:mm dd MMM yyyy'}}</span></span>
+  </li>
+</template>
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob');
+
+  var main = function($stateParams, User){
+    //we have the email History
+    //empty the container
+    //$(".main-content").empty();
+    //$(".sidebar").remove();
+    //put template
+    var template = tim.template.get('#template-emailhistory').compile();
+    var entries = [];
+    template.scope.data = entries;
+    $('.main-content').append($(template));
+    entries.push(data);
+    //build new array
+    var emails = {};
+    for(mail in emailhistory){
+      emails[mail] = [];
+      emails[mail].send = emailhistory[mail].send
+      if(typeof emailhistory[mail].open != "undefined"){
+        emails[mail].open = emailhistory[mail].open;
+        emails[mail].open.icon = "email";
+      }
+      if(typeof emailhistory[mail].click != "undefined"){
+        emails[mail].click = emailhistory[mail].click;
+        emails[mail].click.icon ="link";
+      }
+
+    }
+    var template = tim.template.get('#emailhistory-entry').compile();
+    var entries = [];
+    template.scope.emailhistory = emailhistory;
+    $('.statuses-list').append($(template));
+    entries.push(data);
+
+
+  };
+  var controller = function(){}
+
+
+  var getEmailHistory = function($stateParams) {
+    //get user id
+    var epId = window.location.href.split("/")[5];
+    ajax.get("https://od.aiesec.de/leadnurturing/emailhistory/parser.php?id="+epId).then(function(el){
+      //check if user has an email history
+      if(el.one == "empty"){
+        //no email history
+        $(".timeline").text("This EP has not received emails through national campaigns, yet");
+      }
+      else{
+        emailhistory = el;
+        main(emailhistory);
+      }
+
+
+    });
+  };
+
+  var newState = {
+    state: 'person.emailhistory',
+          config: {
+              url: '/emailhistory',
+              views: {
+                'section': {
+                  templateUrl: 'template-emailhistory',
+                  controller: controller,
+                  resolve: {
+                    emailhistory: getEmailHistory
+                  }
+                }
+              }
+          }
+  };
+  aigTim.addState(newState);
+
+})(aigTim, jQuery);
+</script>

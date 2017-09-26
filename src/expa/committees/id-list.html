@@ -1,0 +1,88 @@
+<!--
+****************************
+Weiterleitung von tim/list-committee
+****************************
+-->
+
+<script type="text/javascript">
+(function(tim, $) {
+
+	var controller = function($state, User) {
+		//reroute to offical expa teamsOverview
+		$state.go('committee.list', {
+			id: User.current_office.id
+		});
+	};
+
+	var newState = {
+		state: 'tim.list-committee',
+        config: {
+            url: '/tim/list-committee',
+            views: {
+            	'root@': {
+            		template: '',
+            		controller: controller,
+            	}
+            }
+        }
+	};
+
+	tim.addState(newState);
+
+})(aigTim, jQuery);
+</script>
+
+<template id="committee-list" type="text/ng-template">
+	<div>
+		<select class="aig-terms-menu" ng-change="loadTerm()" ng-model="selectedTerm" ng-options="term.id as term.short_name for term in terms">
+		</select>
+	</div>
+	<div ui-view="term"></div>
+</template>
+
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa');
+
+	var getCommittee = function($stateParams) {
+		return expa.get('committees/' + $stateParams.id + '.json');
+	};
+
+	var controller = function($scope, $state, committee) {
+
+		$scope.loadTerm = function() {
+			$state.go('committee.list.term', {
+				termId: $scope.selectedTerm
+			});
+		};
+		
+		$scope.office = 'Office in ' + committee.name;
+		$scope.terms = committee.terms.reverse();
+		$scope.selectedTerm = $scope.terms[0].id;
+		
+		$scope.loadTerm();
+
+	};
+
+	var newState = {
+		state: 'committee.list',
+        config: {
+            url: '/list',
+            views: {
+            	'section@committee': {
+            		templateUrl: 'committee-list',
+            		controller: controller,
+            	}
+            },
+            resolve: {
+    			committee: getCommittee
+    		}
+        }
+	};
+
+	tim.addState(newState);
+
+})(aigTim, jQuery);
+</script>
+
+

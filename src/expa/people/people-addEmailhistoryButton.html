@@ -1,0 +1,30 @@
+<style>
+</style>
+<template id="emailhistory">
+  <p>
+    Hello
+  </p>
+</template>
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob');
+
+  var main = function($stateParams, User){
+    //check if emailhistory exists
+    if(typeof angular.element($('.profile-content')).scope().vm.navItems[6] == "undefined"){
+      angular.element($('.profile-content')).scope().vm.navItems.push({state: "person.emailhistory", title: "Email History", privs: ""})
+    }
+  };
+
+	tim.script.add({
+		name: 'emailHistory',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/people\/[0-9]+.*',
+        script: main
+	});
+
+
+
+
+})(aigTim, jQuery);
+</script>

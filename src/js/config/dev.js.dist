@@ -1,0 +1,19 @@
+(function(tim){
+
+	tim.config = {
+		finance: {
+			// base: 'https://finance.aiesec.de/'
+			base: 'https://finance.aiesec.dev/'
+		},
+		expa: {
+			base: 'https://gis-api.aiesec.org/v2/'
+		},
+		noob: {
+			// base: 'https://noob.aiesec.dev/' // lokal noob
+			// base: 'https://noob.aiesec.de/' // live noob
+			base: 'https://testspace.aiesec.de/noob2/api/' // testspace noob
+		}
+	};
+	tim.setDebug();
+
+})(aigTim);

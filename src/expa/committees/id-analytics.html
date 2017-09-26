@@ -1,0 +1,67 @@
+<style>
+	.analytics-menu a{
+		margin: 10px 0;
+	}
+</style>
+
+<template type="text/ng-template" id="tim-analytics.html">
+	<div class="analytics-menu">
+		<a class="btn" href="/#/committees/{{ id }}/analytics/newie-retention">Newie Retention</a>
+		<a class="btn" href="/#/committees/{{ id }}/analytics/retention">Retention</a>
+		<a class="btn" href="/#/committees/{{ id }}/analytics/productivity">Productivity</a>
+		<a class="btn" href="/#/committees/{{ id }}/analytics/overview-enddate">Overview Enddate</a>
+		<a class="btn" href="/#/committees/{{ id }}/analytics/overviewFoBo">Overview FoBo</a>
+		<a class="btn" href="/#/committees/{{ id }}/analytics/plannedIXP">Overview Planned IXP</a>
+		<a class="btn" href="/#/committees/{{ id }}/analytics/realizedIXP">Overview Realized IXP</a>
+	</div>
+	<div ui-view="analytics"></div>
+</template>
+
+<script type="text/javascript">
+
+(function(tim, $){
+
+	var controller = function($scope, $stateParams) {
+		$scope.id = $stateParams.id;
+	};
+
+	var newState = {
+		state: 'committee.analytics',
+        config: {
+            url: '/analytics',
+            views: {
+            	'section@committee': {
+            		templateUrl: 'tim-analytics.html',
+            		controller: controller
+            	}
+            }
+        }
+	};
+
+	aigTim.addState(newState);
+
+	var intermediateController = function($state, User) {
+		//reroute to offical expa teamsOverview
+		$state.go('committee.analytics', {
+			id: User.current_office.id
+		});
+	};
+
+	var intermediateState = {
+		state: 'tim.intermediateAnalytics',
+        config: {
+            url: '/tim/analytics',
+            views: {
+            	'root@': {
+            		template: '',
+            		controller: intermediateController,
+            	}
+            }
+        }
+	};
+
+	tim.addState(intermediateState);
+
+})(aigTim, jQuery);
+	
+</script>

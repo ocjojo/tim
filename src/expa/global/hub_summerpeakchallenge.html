@@ -1,0 +1,852 @@
+<style>
+.hub{
+	padding-top: 40px;
+}
+.hubentry{
+	float:left;
+	width:33%;
+}
+
+#section01 a span {
+	position: fixed;
+	top: 0;
+	left: 45%;
+	width: 24px;
+	height: 24px;
+	margin-left: -12px;
+	border-left: 1px solid grey;
+	border-bottom: 1px solid grey;
+	-webkit-transform: rotate(-45deg);
+	transform: rotate(-45deg);
+	box-sizing: border-box;
+}
+.demo a {
+	position: fixed;
+	bottom: 20px;
+	left: 45%;
+	z-index: 2;
+	display: inline-block;
+	-webkit-transform: translate(0, -50%);
+	transform: translate(0, -50%);
+	color: grey;
+	font : normal 400 20px/1 'Josefin Sans', sans-serif;
+	letter-spacing: .1em;
+	text-decoration: none;
+	transition: opacity .3s;
+}
+.openspace{
+	cursor:pointer;
+}
+.confirm2{
+	width: 85px;
+  padding: 6.5px 13px;
+}
+.kw-td{
+	padding:15px!important;
+	font-size: 0.7em;
+}
+.solution-button{
+	background: #f8fbfd;
+  border: 1px #ddd solid;
+  border-radius: 4px;
+	margin-left:20%;
+	margin-right:20%;
+	text-align: center;
+}
+.moresolutions-button{
+	background: #f8fbfd;
+  border: 1px #ddd solid;
+  border-radius: 4px;
+	margin-left:20%;
+	padding-top:10px;
+	margin-right:20%;
+	text-align: center;
+}
+.td-subtext{
+	font-size: 0.65em;
+  color: grey;
+}
+.hub-icon{
+	width: 100px;
+	display: block;
+	font-weight: 300;
+	margin: auto auto 10px;
+	border-radius: 1000px;
+	text-align: center;
+}
+.hub-label{
+	width: 80%;
+	color: #777;
+	margin: auto;
+	display: block;
+	line-height: 1.4;
+	text-align: center;
+}
+.news-entry-content{
+	line-height: 16pt;
+}
+.emoji-bar{
+	color: #777;
+	text-align: right;
+	padding: 10px 15px;
+	margin-top: 10px;
+	background: #fafafa;
+	border-radius: 4px 4px 0 0;
+}
+.dashboard-blocks-no-border{
+	width: 48%;
+	float: left;
+	margin-right: 4%;
+	margin-bottom: 40px;
+	padding: 20px;
+	padding-top: 100px;
+}
+.dashboard-blocks-no-border-end{
+	width: 48%;
+	float: right;
+	margin-right: 0;
+	margin-bottom: 40px;
+	padding: 20px;
+	padding-top: 100px;
+}
+.timerText{
+	font-size: 20pt;
+	text-align: center;
+}
+.smallText{
+	font-size: 10pt;
+	text-align: center;
+}
+.timer{
+
+}
+.labelCountdown{
+	color: #777;
+	display: block;
+	font-size: 25pt;
+	margin-bottom: 15px;
+	text-transform: uppercase;
+	padding-top: 10px;
+}
+</style>
+<template id="summerPeakStats-wrapper">
+	<li class="dashboard-block end summerPeakStats">
+		<span class="label">Top Contributors Summer Peak all Programs (Approves)</span>
+		<div class="summerPeakStats-lcs">
+		</div>
+		<div class="showMore-button-summerPeak" style="float:right;padding-top:10px;padding-bottom:10px;">
+
+		</div>
+		<div style="float:right;">
+			<span style="text-transform:initial!important;" class="label summerPeak">These LCs are the top contributors right now since <b style="font-weight: bold;color: #393;">19.06.2017</b>. Let's show some resilience and action-drive to get our LC up there.<br />&nbsp;<br /></span>
+		</div>
+	</li>
+</template>
+<template id="winterPeakStats-wrapper">
+	<li class="dashboard-block end winterPeakStats">
+		<span class="label">Top Contributors Winter Peak all Programs (Approves)</span>
+		<div class="winterPeakStats-lcs">
+		</div>
+		<div class="showMore-button-winterPeak" style="float:right;padding-top:10px;padding-bottom:10px;">
+
+		</div>
+		<div style="float:right;">
+			<span style="text-transform:initial!important;" class="label winterPeak">These LCs are the top contributors right now since <b style="font-weight: bold;color: #393;">01.08.2017</b>. Let's show some resilience and action-drive to get our LC up there.<br />&nbsp;<br /></span>
+		</div>
+	</li>
+</template>
+<template id="dailyStats-wrapper">
+	<li class="dashboard-block dailyStats">
+		<span class="label">All the knowledge you need to perform right now!</span>
+		<ul class="dashboard-list">
+			<div id="hub-content"></div>
+		</ul>
+	</li>
+</template>
+<template id="weeklyStats-wrapper">
+	<li class="dashboard-block weeklyStats">
+		<span class="label">Who is closing the most accounts in this week? (Approves)</span>
+		<div class="weeklyStats-lcs">
+		</div>
+		<div class="showMore-button-weekly" style="float:right;padding-top:10px;padding-bottom:10px;">
+
+		</div>
+		<div style="float:right;">
+			<span style="text-transform:initial!important;" class="label weekly">These LCs are the top contributors right now since <b style="font-weight: bold;color: #3692e0;">24.07.2017</b>. Let's show some resilience and action-drive to get our LC up there.<br />&nbsp;<br /></span>
+		</div>
+	</li>
+</template>
+<template id="countdown">
+	<ul class="dashboard-blocks-no-border">
+		<div id="clockdiv">
+		  <span class="status timer">
+		    <span class="days timerText"></span><br />
+		    <span class="smalltext"><br />Days</span>
+		  </span>
+		  <span class="status timer">
+		    <span class="hours timerText"></span><br />
+		    <span class="smalltext"><br />Hours</span>
+		  </span>
+		  <span class="status timer">
+		    <span class="minutes timerText"></span><br />
+		    <span class="smalltext"><br />Minutes</span>
+		  </span>
+		  <span class="status timer">
+		    <span class="seconds timerText"></span><br />
+		    <span class="smalltext"><br />Seconds</span>
+		  </span>
+			<span class="status timer">
+		    <span class="milliseconds timerText"></span><br />
+		    <span class="smalltext">Milli<br />seconds</span>
+		  </span>
+		</div>
+		<div>
+			<span class="labelCountdown">
+				to achieve&nbsp; <b style="font-size:30pt; font-weight:bold">20 in 20</b>.
+			</span>
+		</div>
+		<span class="labelCountdown approvesToday" style="font-size:18pt!important;">
+			<b style="font-size:25pt!important;; font-weight:bold; color:#3692e0;">[[number]]/20</b>&nbsp; achieved so far today.
+		</div>
+	</div>
+	<span class="labelCountdown approvesToday" style="font-size:8pt!important;">
+		<a href="https://drive.google.com/a/aiesec.de/file/d/0BxNYpyKFe_3qQktlRElvNm4tRGc/view?usp=sharing" target="_blank">Don't know what 20 in 20 is? Read here</a>
+	</div>
+	</ul>
+</template>
+<template id="hub-entry">
+	<li class="interviewed hubentry ng-scope">
+		<a href="{{data.url}}">
+			<span class="count hub-icon" style="font-size: 5rem;line-height: 1.9;color:{{data.color}};border: 2px {{data.color}} solid;">
+				{{data.name}}
+			</span>
+			<span class="count-label hub-label">
+				{{data.label}}
+			</span>
+		</a>
+	</li>
+</template>
+<template id="countdown4">
+	<ul class="dashboard-blocks-no-border-end">
+		<div>
+			<span class="labelCountdown">
+				THIS IS THE LAST WEEK OF
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown approvesSummerPeak">
+				<b style="font-size:40pt!important;">SUMMER PEAK</b>
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown" style="font-size:15pt!important;">
+				<a href="https://www.youtube.com/watch?v=-nXE6TuoICI">CLOSE ALL YOUR ACCOUNTS!</a>
+			</span>
+		</div>
+	</ul>
+</template>
+<template id="countdown5">
+	<ul class="dashboard-blocks-no-border-end">
+		<div>
+			<span class="labelCountdown">
+				So far we achieved
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown approvesSummerPeak">
+				<b style="font-size:40pt!important;; font-weight:bold; color:#393;">[[number]]</b>
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown" style="font-size:15pt!important;">
+				for this winter.
+			</span>
+		</div>
+	</ul>
+</template>
+<template id="countdown2">
+	<ul class="dashboard-blocks-no-border-end">
+		<div>
+			<span class="labelCountdown">
+				So far we achieved
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown approvesSummerPeak">
+				<b style="font-size:40pt!important;; font-weight:bold; color:#393;">[[number]]/839</b>
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown" style="font-size:15pt!important;">
+				for this summer.
+			</span>
+		</div>
+	</ul>
+</template>
+<template id="countdown3">
+	<ul class="dashboard-blocks-no-border-end">
+		<div>
+			<span class="labelCountdown">
+				This means so far
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown">
+				[[number]]/839
+			</span>
+		</div>
+		<div>
+			<span class="labelCountdown">
+				have been achieved for summer peak.
+			</span>
+		</div>
+	</ul>
+</template>
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob'),
+		ajax = tim.helper.get('ajax');
+	var removeStuff = function(){
+		$(".dashboard-header").empty();
+		$(".dashboard-header").css("padding","50px");
+		$(".opportunities").remove();
+		$(".people").remove();
+	}
+	function getTimeRemaining(endtime) {
+	  var t = Date.parse(endtime) - Date.parse(new Date());
+	  var seconds = Math.floor((t / 1000) % 60);
+	  var minutes = Math.floor((t / 1000 / 60) % 60);
+	  var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+	  var days = Math.floor(t / (1000 * 60 * 60 * 24));
+	  return {
+	    'total': t,
+	    'days': days,
+	    'hours': hours,
+	    'minutes': minutes,
+	    'seconds': seconds,
+	  };
+	}
+	function initializeClock(id, endtime) {
+	  var clock = document.getElementById(id);
+	  var daysSpan = clock.querySelector('.days');
+	  var hoursSpan = clock.querySelector('.hours');
+	  var minutesSpan = clock.querySelector('.minutes');
+	  var secondsSpan = clock.querySelector('.seconds');
+		var milliSecondsSpan = clock.querySelector('.milliSeconds');
+
+	  function updateClock() {
+	    var t = getTimeRemaining(endtime);
+
+	    daysSpan.innerHTML = t.days;
+	    hoursSpan.innerHTML = ('0' + t.hours).slice(-2);
+	    minutesSpan.innerHTML = ('0' + t.minutes).slice(-2);
+	    secondsSpan.innerHTML = ('0' + t.seconds).slice(-2);
+	    if (t.total <= 0) {
+	      clearInterval(timeinterval);
+	    }
+
+	  }
+		millisecondsFunction();
+		function millisecondsFunction(){
+
+
+			var el = clock.querySelector('.milliseconds');
+			var milliSecondsTime = 1000;
+			var timer;
+
+
+			el.innerHTML = milliSecondsTime;
+			timer = setInterval(function(){
+			    milliSecondsTime = milliSecondsTime - 11;
+			    if(milliSecondsTime/1000 <= 0) {
+			        clearTimeout(timer);
+			        el.innerHTML = 1000;
+							millisecondsFunction();
+			    }
+			    else {
+			        el.innerHTML = milliSecondsTime;
+			    }
+			},10);
+		}
+	  updateClock();
+	  var timeinterval = setInterval(updateClock, 1000);
+}
+
+	var countdown2 = function(){
+		var template = tim.template.get('#countdown4').compile();
+		$.when($('.dashboard').prepend($(template))).then(function(){
+
+		});
+
+	}
+
+	var countdown = function(){
+		var template = tim.template.get('#countdown').compile();
+		/*$.when($('.dashboard').prepend($(template))).then(function(){
+			var today = new Date();
+			var daysToGo = today + new Date(20 * 24 * 60 * 60 * 1000);
+			var deadline = "2017-07-13";
+			initializeClock('clockdiv', deadline);
+
+		});*/
+		var template = tim.template.get('#countdown2').compile();
+		$.when($('.dashboard').prepend($(template))).then(function(){
+			//get approves today
+
+			var requests = [];
+			requests.push(
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-06-19",
+					"basic[type]":"person"
+				}),
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-06-19",
+					"basic[type]":"opportunity"
+				}));
+				$.whenAll(requests).done(fillSummerPeakGoal)
+
+		});
+
+	}
+	var countdown3 = function(){
+		var template = tim.template.get('#countdown5').compile();
+		$.when($('.dashboard').prepend($(template))).then(function(){
+			//get approves today
+
+			var requests = [];
+			requests.push(
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-08-01",
+					"basic[type]":"person"
+				}),
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-08-01",
+					"basic[type]":"opportunity"
+				}));
+				$.whenAll(requests).done(fillSummerPeakGoal)
+
+		});
+
+	}
+	var scrolldown = function(){
+		$("main").append($('<section id="section01" class="demo"><a><span></span><p style="position:relative;top:-10px!important;font-size:1.5rem;">Scroll Down For More Awesomeness</p></a></section>'));
+		$("#section01").bind("click",function(el){
+			var position = $(document).scrollTop();
+			$('body,html').animate({scrollTop:position+1300},"slow");
+		});
+	}
+	var fillSummerPeakGoal = function(){
+		var approves = arguments[0][0].analytics.total_approvals.doc_count+arguments[1][0].analytics.total_approvals.doc_count
+			var content = $(".approvesSummerPeak")[0].innerHTML;
+			content = content.replace("[[number]]", approves);
+			$(".approvesSummerPeak")[0].innerHTML = content;
+
+	}
+	var addIncoming = function(){
+		var peopleAnalytics = arguments[0][0].analytics.children.buckets;
+		var analytics = peopleAnalytics;
+		var opportunityAnalytics = arguments[1][0].analytics.children.buckets;
+		var lcs = arguments[2][0].suboffices;
+		for (var i = 0; i < peopleAnalytics.length; i++) {
+			var key = peopleAnalytics[i].key;
+			for (var j = 0; j < opportunityAnalytics.length; j++) {
+				if(opportunityAnalytics[j].key == key){
+					incomingApprovals = opportunityAnalytics[j].total_approvals.doc_count;
+					outgoingApprovals = peopleAnalytics[i].total_approvals.doc_count;
+					analytics[i].total_approvals.doc_count = incomingApprovals+outgoingApprovals;
+				}
+			}
+		}
+		var approvals = [];
+
+		var children = analytics;
+		var z = 0;
+		children.sort(function(a, b) {
+			return b.total_approvals.doc_count - a.total_approvals.doc_count;
+		});
+		for (var i = 0; i < children.length; i++) {
+			for (var j = 0; j < lcs.length; j++) {
+				if(lcs[j].id == children[i].key){
+					var lc = lcs[j].name;
+					var approvals = children[i].total_approvals.doc_count;
+					if(i >= 5){
+						$(".expand-summerPeak").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status accepted" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+					}
+					else{
+						$(".summerPeakStats-lcs").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status accepted" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+					}
+					if(i == 6){
+						$(".summerPeakStats-lcs").append($('<div class="expand-summerPeak" style="padding-top:20px;padding-bottom:20px;display:none"></div>'));
+					}
+					if(i == children.length-1){
+
+					}
+				}
+			}
+		}
+		$.when($(".showMore-button-summerPeak").append($('<a style="float:right;" class="btn cancel fenja2">Show More</a>'))).then(function(el){
+			$(".fenja2").bind("click",function(el){
+				$(".expand-summerPeak").slideToggle( "slow", function() {});
+			});
+		});
+	}
+	var addIncoming3 = function(){
+		var peopleAnalytics = arguments[0][0].analytics.children.buckets;
+		var analytics = peopleAnalytics;
+		var opportunityAnalytics = arguments[1][0].analytics.children.buckets;
+		var lcs = arguments[2][0].suboffices;
+		for (var i = 0; i < peopleAnalytics.length; i++) {
+			var key = peopleAnalytics[i].key;
+			for (var j = 0; j < opportunityAnalytics.length; j++) {
+				if(opportunityAnalytics[j].key == key){
+					incomingApprovals = opportunityAnalytics[j].total_approvals.doc_count;
+					outgoingApprovals = peopleAnalytics[i].total_approvals.doc_count;
+					analytics[i].total_approvals.doc_count = incomingApprovals+outgoingApprovals;
+				}
+			}
+		}
+		var approvals = [];
+
+		var children = analytics;
+		var z = 0;
+		children.sort(function(a, b) {
+			return b.total_approvals.doc_count - a.total_approvals.doc_count;
+		});
+		for (var i = 0; i < children.length; i++) {
+			for (var j = 0; j < lcs.length; j++) {
+				if(lcs[j].id == children[i].key){
+					var lc = lcs[j].name;
+					var approvals = children[i].total_approvals.doc_count;
+					if(i >= 5){
+						$(".expand-winterPeak").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status accepted" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+					}
+					else{
+						$(".winterPeakStats-lcs").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status accepted" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+					}
+					if(i == 6){
+						$(".winterPeakStats-lcs").append($('<div class="expand-summerPeak" style="padding-top:20px;padding-bottom:20px;display:none"></div>'));
+					}
+					if(i == children.length-1){
+
+					}
+				}
+			}
+		}
+		$.when($(".showMore-button-winterPeak").append($('<a style="float:right;" class="btn cancel fenja2">Show More</a>'))).then(function(el){
+			$(".fenja2").bind("click",function(el){
+				$(".expand-winterPeak").slideToggle( "slow", function() {});
+			});
+		});
+	}
+	var addIncomingWeekly = function(){
+		var peopleAnalytics = arguments[0][0].analytics.children.buckets;
+		var analytics = peopleAnalytics;
+		var opportunityAnalytics = arguments[1][0].analytics.children.buckets;
+		var lcs = arguments[2][0].suboffices;
+		for (var i = 0; i < peopleAnalytics.length; i++) {
+			var key = peopleAnalytics[i].key;
+			for (var j = 0; j < opportunityAnalytics.length; j++) {
+				if(opportunityAnalytics[j].key == key){
+					incomingApprovals = opportunityAnalytics[j].total_approvals.doc_count;
+					outgoingApprovals = peopleAnalytics[i].total_approvals.doc_count;
+					analytics[i].total_approvals.doc_count = incomingApprovals+outgoingApprovals;
+				}
+			}
+		}
+		var approvals = [];
+
+		var children = analytics;
+		var z = 0;
+		children.sort(function(a, b) {
+			return b.total_approvals.doc_count - a.total_approvals.doc_count;
+		});
+		for (var i = 0; i < children.length; i++) {
+			for (var j = 0; j < lcs.length; j++) {
+				if(lcs[j].id == children[i].key){
+					var lc = lcs[j].name;
+					var approvals = children[i].total_approvals.doc_count;
+					if(i >= 5){
+						$(".expand-weekly").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status open" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+					}
+					else{
+						$(".weeklyStats-lcs").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status open" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+					}
+					if(i == 6){
+						$(".weeklyStats-lcs").append($('<div class="expand-weekly" style="padding-top:20px;padding-bottom:20px;display:none"></div>'));
+					}
+					if(i == children.length-1){
+
+					}
+				}
+			}
+		}
+		$.when($(".showMore-button-weekly").append($('<a style="float:right;" class="btn cancel fenja2">Show More</a>'))).then(function(el){
+			$(".fenja2").bind("click",function(el){
+				$(".expand-weekly").slideToggle( "slow", function() {});
+			});
+		});
+	}
+	var weeklyStats = function(){
+		var template = tim.template.get('#weeklyStats-wrapper').compile();
+		$.when($('.dashboard-blocks-list').append($(template))).then(function(){
+			//get lcs
+				var requests = [];
+				requests.push(
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-07-24",
+					"basic[type]":"person"
+				}),
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-07-24",
+					"basic[type]":"opportunity"
+				}),
+				expa.get("committees/1596.json",{})
+			);
+			$.whenAll(requests).done(addIncomingWeekly);
+			/*.then(function(el){
+
+					//get children
+
+				});*/
+			});
+	}
+	var summerPeakStats = function(){
+		var template = tim.template.get('#summerPeakStats-wrapper').compile();
+		$.when($('.dashboard-blocks-list').append($(template))).then(function(){
+			//get lcs
+				var requests = [];
+				requests.push(
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-06-19",
+					"basic[type]":"person"
+				}),
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-06-19",
+					"basic[type]":"opportunity"
+				}),
+				expa.get("committees/1596.json",{})
+			);
+			$.whenAll(requests).done(addIncoming);
+			/*.then(function(el){
+
+					//get children
+
+				});*/
+			});
+	}
+	var winterPeakStats = function(){
+		var template = tim.template.get('#winterPeakStats-wrapper').compile();
+		$.when($('.dashboard-blocks-list').append($(template))).then(function(){
+			//get lcs
+				var requests = [];
+				requests.push(
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-08-01",
+					"basic[type]":"person"
+				}),
+				expa.get("applications/analyze.json",{
+					"programmes":[1,2,5],
+					"basic[home_office_id]":1596,
+					"start_date":"2017-08-01",
+					"basic[type]":"opportunity"
+				}),
+				expa.get("committees/1596.json",{})
+			);
+			$.whenAll(requests).done(addIncoming3);
+			/*.then(function(el){
+
+					//get children
+
+				});*/
+			});
+	}
+	var getHubCSV = function(successFunction){
+		var link = ajax.get("https://spreadsheets.google.com/feeds/list/1jYsjQLASPQ-IibMa2hVGx1kmgOMNbRFSGSOGEdResZo/og8g0bk/public/values?alt=json", successFunction).then(function(el){
+			var hub = el.feed.entry;
+			parseHub(hub);
+		});
+	};
+	var parseHub = function(hub){
+		for(var i in hub){
+			var name = hub[i].gsx$name.$t;
+			var label = hub[i].gsx$label.$t;
+			var color = hub[i].gsx$color.$t;
+			var url = hub[i].gsx$url.$t;
+			var data = {};
+			data.name = name;
+			data.label = label;
+			data.color = color;
+			data.url = url;
+			var template = tim.template.get("#hub-entry").compile();
+			template.scope.data = data;
+			$("#hub-content").append($(template));
+		}
+	};
+	var dailyStats = function(){
+		var template = tim.template.get('#dailyStats-wrapper').compile();
+		$.when($('.dashboard-blocks-list').append($(template))).then(function(){
+			getHubCSV();
+		});;
+
+		/*
+		//get lcs
+		expa.get("committees/1596.json",{},false).then(function(el){
+			var lcs = el.suboffices;
+			var today = new Date();
+			expa.get("applications/analyze.json",{
+				"programmes":[1],
+				"basic[home_office_id]":1596,
+				"start_date":today,
+				"basic[type]":"person"
+			}).then(function(el){
+				//get children
+				var approvals = [];
+				var children = el.analytics.children.buckets;
+				var z = 0;
+				children.sort(function(a, b) {
+					return b.total_approvals.doc_count - a.total_approvals.doc_count;
+				});
+				for (var i = 0; i < children.length; i++) {
+					for (var j = 0; j < lcs.length; j++) {
+						if(lcs[j].id == children[i].key){
+							var lc = lcs[j].name;
+							var approvals = children[i].total_approvals.doc_count;
+							if(i >= 5){
+								$(".expand-daily").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status open" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+							}
+							else{
+								$(".dailyStats-lcs").append($('<ul class="dashboard-list"><li style="padding: 4px 15px!important;font-size: 10pt!important;" class="sub-heading"><span class="status open" style="float:right;">'+approvals+'</span><span style="float: left;">'+lc+'</span></li></ul>'));
+							}
+							if(i == 6){
+								$(".dailyStats-lcs").append($('<div class="expand-daily" style="padding-top:20px;padding-bottom:20px;display:none"></div>'));
+							}
+							if(i == children.length-2){
+
+							}
+						}
+					}
+				}
+				$.when($(".showMore-button-daily").append($('<a style="float:right;" class="btn cancel fenja">Show More</a>'))).then(function(el){
+					$(".fenja").bind("click",function(el){
+						$(".expand-daily").slideToggle( "slow", function() {});
+					});
+				});
+			});
+		});
+		//get price
+		var date = new Date();
+			var d = new Date(date),
+				 month = '' + (d.getMonth() + 1),
+				 day = '' + d.getDate(),
+				 year = d.getFullYear();
+
+		 if (month.length < 2) month = '0' + month;
+		 if (day.length < 2) day = '0' + day;
+		 var today = [year, month, day].join('-');
+		 //console.log(today);
+		 var prices = {
+			 "2017-06-20":"a crate of beer with a special note from the MC",
+			 "2017-06-21":"a voucher for facebook advertisement",
+			 "2017-06-22":"a photoshoot for your LC",
+			 "2017-06-23":"a wish fulfilled by the MC",
+			 "2017-06-24":"nothing (try again next week)",
+			 "2017-06-25":"nothing (try again next week)",
+			 "2017-06-26":"free entrance for transition party for 3 people",
+			 "2017-06-27":"4 free flixbus rides",
+			 "2017-06-28":"muffins for your next LCM",
+			 "2017-06-29":"a Summer Peak Party Box for your LC",
+			 "2017-06-30":"a wish fulfilled by the MC",
+			 "2017-07-01":"nothing (try again next week)",
+			 "2017-07-02":"nothing (try again next week)",
+			 "2017-07-03":"a day with the MC for your LC",
+			 "2017-07-04":"the chance to put your step to the MC 1718 roll call",
+			 "2017-07-05":"to choose Chris' outfit for the whole period of next NatCo",
+			 "2017-07-06":"a professional coaching visit",
+			 "2017-07-07":"a wish fulfilled by the MC",
+			 "2017-07-08":"nothing (try again next week)",
+			 "2017-07-09":"nothing (try again next week)",
+			 "2017-07-10":"rooms in yellow house #business for the next NatCo",
+			 "2017-07-11":"a calling day with the BDT / iGT NST",
+			 "2017-07-12":"a design of a logo or visuals for your LC by Olga",
+			 "2017-07-13":"a crate of beer with a special note from the MC",
+			 "2017-07-14":"nothing",
+			 "2017-07-15":"nothing",
+		 };
+		 var content = $(".dailyText")[0].innerHTML;
+		 content = content.replace("[[gift]]", prices[today]);
+			$(".dailyText")[0].innerHTML = content;
+	});*/
+		//});
+	}
+	var dailyStats = function(){
+		var template = tim.template.get('#dailyStats-wrapper').compile();
+		$.when($('.dashboard-blocks-list').append($(template))).then(function(){
+			getHubCSV();
+		});
+
+	}
+  var main = function() {
+		tim.find('[ui-sref="person({ id: vm.user.id })"]').then(function(person){
+			var scope = angular.element(person).scope();
+
+			tim.wait(scope.vm, "user").then(function(el){
+				//remove unneeded blocks
+
+				//create time trigger
+				var today = (new Date).getTime();
+				var triggerDate = new Date("2017-07-24").getTime();
+				var triggerDate2 = new Date("2017-08-01").getTime();
+				if(today > triggerDate){
+					//we launch the weekly scoreboard
+					removeStuff();
+					weeklyStats();
+					summerPeakStats();
+					countdown2();
+					countdown();
+
+				}
+				else if (today > triggerDate2) {
+					//we launch the new scoreboard + EXPA Hub
+					removeStuff();
+					dailyStats();
+					winterPeakStats();
+					countdown3();
+				}
+				else{
+					//this is what we have right now
+					removeStuff();
+					dailyStats();
+					summerPeakStats();
+					countdown();
+				}
+
+			});
+		});
+  };
+	tim.script.add({
+		name: 'AIESEC Hub',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/',
+        script: main
+	});
+
+})(aigTim, jQuery);
+</script>

@@ -1,0 +1,90 @@
+<style>
+	.expa-error{
+		width: 400px;
+	}
+	.expa-error h1{
+		font-size: 3rem;
+	}
+
+	.aig-loader {
+		position: fixed;
+		top: 200px;
+		width: 24px;
+		height: 24px;
+		left: 50%;
+		transform: translateX(-50%);
+	}
+	.aig-popup{
+		position: fixed;
+		top: 200px;
+		padding: 40px 46px;
+		background: #f8fbfd;
+		box-shadow: 0px 0px 10px #aaa;
+		min-width: 250px;
+		left: 50%;
+		transform: translateX(-50%);
+
+	}
+	.aig-popup .close-btn {
+		color: #aaa;
+		cursor: pointer;
+		font-size: 30px;
+		position: absolute;
+		top: 5px;
+		right: 8px;
+		min-width: 20px;
+		min-height: 20px;
+	}
+</style>
+
+<template id="aig-nav-tim">
+<li class="aig-nav-tim">
+	<a href="#/tim/teams" style=""><span class="dropdown">TIM</span></a>
+	<ul>
+		<li>
+			<a href="#/tim/list-committee">Memberlist</a>
+			<a href="#/tim/team-overview">Teamoverview</a>
+			<a href="#/tim/analytics">TM Analytics</a>
+			<a href="https://help.aiesec.de">Help</a>
+		</li>
+	</ul>
+</li>
+<li class="aig-nav-fin-inn">
+	<a href="http://finance.aiesec.de/" style=""><span class="dropdown">Fin-Inn</span></a>
+	<ul>
+		<li>
+			<a href="https://finance.aiesec.de/index.php?site=zav">ZAV</a>
+			<a href="https://finance.aiesec.de/index.php?site=pbogen">PBogen</a>
+			<a href="https://finance.aiesec.de/index.php?site=pbmass">PBMassnahmen</a>
+			<a href="https://finance.aiesec.de/index.php?site=donation">Spendenbescheinigung</a>
+			<a href="https://finance.aiesec.de/index.php?site=documents">EP Documents</a>
+			<a href="https://finance.aiesec.de/index.php?site=oox">OO Exchange</a>
+			<a href="https://finance.aiesec.de/index.php?site=reintegration">Book Returnee Talk</a>
+			<a href="https://finance.aiesec.de/index.php?site=npt">NPT</a>
+			<a href="https://finance.aiesec.de/index.php?site=dashboard">Dashboard</a>
+		</li>
+	</ul>
+</li>
+</template>
+
+<template id="aig-popup">
+	<div class="aig-popup">
+		<div class="content"></div>
+		<div class="close-btn" ng-click="close()">
+			<i class="fa fa-times"></i>
+		</div>
+	</div>
+</template>
+
+<template id="expa-loader">
+	<img src="assets/images/icons/loading.svg" alt="Loading" class="aig-loader">
+</template>
+
+<script type="text/javascript">
+	(function(tim){
+		tim.addState({
+			state: 'tim',
+			config: {}
+		});
+	})(aigTim);
+</script>

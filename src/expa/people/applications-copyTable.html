@@ -1,0 +1,56 @@
+<template id="applications-extra-dropdown-copy-table">
+	<li>
+		<a ng-click="copyTable()" class="archived status">Copy Table</a>
+	</li>
+</template>
+
+<script type="text/javascript">
+(function(tim, $){
+
+	var copyTable = function(){
+		var table = document.querySelector('ai-content table');
+		if(!table){
+			tim.popup("No table to copy");
+			return;
+		}
+
+		var body = document.body, range, sel;
+        if (document.createRange && window.getSelection) {
+            range = document.createRange();
+            sel = window.getSelection();
+            sel.removeAllRanges();
+            try {
+                range.selectNodeContents(table);
+                sel.addRange(range);
+            } catch (e) {
+                range.selectNode(table);
+                sel.addRange(range);
+            }
+        } else if (body.createTextRange) {
+            range = body.createTextRange();
+            range.moveToElementText(table);
+            range.select();
+        }
+        if(document.execCommand("Copy") !== true){
+        	tim.popup('Automatic copying is not supported by your browser.');
+        } else {
+        	sel.removeAllRanges();
+        }
+	};
+
+	var controller = function(){
+		tim.find('.applications-extra-dropdown-actions').then(function(el){
+			var button = tim.template.get('#applications-extra-dropdown-copy-table').compile();
+			$(button).appendTo(el);
+			button.scope.copyTable = copyTable;
+		});
+	};
+
+	tim.script.add({
+		name: 'Copy Table',
+		route: 'https://experience.aiesec.org/#/people/applications',
+		script: controller
+	});
+	
+})(aigTim, jQuery);
+</script>

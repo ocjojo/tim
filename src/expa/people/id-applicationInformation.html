@@ -1,0 +1,208 @@
+<template id="app/content/people/profile/details.html" type="text/ng-template">
+	<div class="main-content">
+   		<ng-include src="'app/content/people/profile/profile.personal.html'"></ng-include>
+   		<ng-include src="'app/content/people/profile/profile.applicationinformation.html'"></ng-include>
+   		<ng-include src="'app/content/people/profile/profile.positions.html'"></ng-include>
+   		<ng-include src="'app/content/people/profile/profile.qualities.html'"></ng-include>
+   		<ng-include src="'app/content/people/profile/profile.academic.experiences.html'"></ng-include>
+   		<ng-include src="'app/content/people/profile/profile.professional.experiences.html'"></ng-include>
+	</div>
+		<aside class="sidebar" ng-if="!vm.isEmployee">
+   		<ai-profile-timeline profile="vm.person" entity="person"></ai-profile-timeline>
+   		<ai-profile-missing-fields ng-if="vm.person.missing_profile_fields.length !==0" missing-fields="vm.person.missing_profile_fields"></ai-profile-missing-fields>
+		</aside>
+	<div ui-view="edit"></div>
+</template>
+
+<template id="app/content/people/profile/profile.applicationinformation.html" type="text/ng-template">
+	<div class="profile-block">
+   	<span>Applicationinformation</span>
+    <a ui-sref="person.edit.applicationInformation" class="change edit">Edit ApplicationInformation</a>
+   	<div class="profile-block-content">
+      	<ul class="details-list" id="oGV" ng-if="ai.program == 'oGV'">
+         	<li>
+            	<div class="detail"><span class="key">Type:</span> <span class="value">{{ ai.program }}</span></div>
+              <div class="detail"><span class="key">City:</span> <span class="value">{{ ai.city}}</span></div>
+            	<div class="detail"><span class="key">Field of Studies:</span> <span class="value">{{ ai.fieldOfStudy }}</span></div>
+            	<div class="detail"><span class="key">How heard of AIESEC:</span> <span class="value">{{ ai.howHeard }}</span></div>
+            	<div class="detail"><span class="key">Comments:</span><span class="value">{{ ai.comments }}</span></div>
+            	<div class="detail"><span class="key">Newsletter:</span><span class="value">{{ pi.newsletterPermitted ? "yes" : "no"}}</span></div>
+         	</li>
+      	</ul>
+
+      	<ul class="details-list" id="oGT" ng-if="ai.program == 'oGT'">
+         	<li>
+            	<div class="detail"><span class="key">Type:</span> <span class="value">{{ ai.program }}</span></div>
+              <div class="detail"><span class="key">City:</span> <span class="value">{{ ai.city}}</span></div>
+            	<br><span>About University</span>
+            	<div class="detail"><span class="key">Enrolled:</span> <span class="value">{{ ai.enrolled ? "yes" : "no"}}</span></div>
+            	<div class="detail"><span class="key">Field of Studies:</span> <span class="value">{{ ai.fieldOfStudy }}</span></div>
+            	<div class="detail"><span class="key">Course of Studies:</span><span class="value">{{ ai.studyCourse }}</span></div>
+            	<div class="detail"><span class="key">Semester:</span><span class="value">{{ ai.semester }}</span></div>
+            	<div class="detail"><span class="key">Target Degree:</span><span class="value">{{ ai.degree }}</span></div>
+            	<div class="detail"><span class="key">Expected Date of Graduation:</span><span class="value">{{ ai.graduation }}</span></div>
+            	<div class="detail"><span class="key">Practical Experience:</span><span class="value">{{ ai.practicalExperience }}</span></div>
+            	<br><span>About internship</span>
+            	<div class="detail"><span class="key">Focus of internship:</span><span class="value">{{ ai.focusOfInternship }}</span></div>
+            	<div class="detail"><span class="key">Earliest Start Date:</span> <span class="value">{{ ai.earliestStartDate }}</span></div>
+              <div class="detail"><span class="key">Latest Start Date:</span> <span class="value">{{ ai.latestStartDate }}</span></div>
+            	<div class="detail"><span class="key">Minimum Duration (weeks):</span>{{ai.minimumDuration}}</div>
+            	<div class="detail"><span class="key">Maximum Duration (weeks):</span>{{ai.maximumDuration}}</div>
+            	<div class="detail"><span class="key">Which parts of the world interested in:</span><span class="value">{{ ai.worldRegions }}</span></div>
+            	<br><span>General</span>
+            	<div class="detail"><span class="key">How heard of AIESEC:</span><span class="value">{{ ai.howHeard }}</span></div>
+            	<div class="detail"><span class="key">Comments:</span><span class="value">{{ ai.comment }}</span></div>
+            	<div class="detail"><span class="key">Newsletter:</span><span class="value">{{ pi.newsletterPermitted ? "yes" : "no"}}</span></div>
+         	</li>
+      	</ul>
+
+      	<ul class="details-list" id="oGE" ng-if="ai.program == 'oGE'">
+         	<li>
+            	<div class="detail"><span class="key">Type:</span> <span class="value">{{ ai.program }}</span></div>
+            	<div class="detail"><span class="key">City:</span> <span class="value">{{ ai.city}}</span></div>
+            	<div class="detail"><span class="key">Field of Studies:</span> <span class="value">{{ ai.fieldOfStudy }}</span></div>
+               <div class="detail"><span class="key">Semester:</span><span class="value">{{ ai.semester }}</span></div>
+              <div class="detail"><span class="key">Target Degree:</span><span class="value">{{ ai.degree }}</span></div>
+            	<div class="detail"><span class="key">Earliest Start Date:</span> <span class="value">{{ ai.earliestStartDate }}</span></div>
+                <div class="detail"><span class="key">Minimum Duration (weeks):</span>{{ai.minimumDuration}}</div>
+              <div class="detail"><span class="key">How heard of AIESEC:</span><span class="value">{{ ai.howHeard }}</span></div>
+            	<div class="detail"><span class="key">Comments:</span> <span class="value">{{ ai.comment }}</span></div>
+            	<div class="detail"><span class="key">Newsletter:</span><span class="value">{{ pi.newsletterPermitted ? "yes" : "no"}}</span></div>
+         	</li>
+      	</ul>
+
+      	<ul class="details-list" id="YT" ng-if="ai.program == 'YT' || vm.person.positions.length != 0">
+         	<li>
+            	<div class="detail"><span class="key">Type:</span> <span class="value">{{ ai.program }}</span></div>
+            	<br><span>About University</span>
+            	<div class="detail"><span class="key">University:</span> <span class="value">{{ ai.university }}</span></div>
+            	<div class="detail"><span class="key">Field of Studies:</span> <span class="value">{{ ai.fieldOfStudy }}</span></div>
+            	<div class="detail"><span class="key">Semester:</span> <span class="value">{{ ai.semester }}</span></div>
+            	<div class="detail"><span class="key">Semester abroad planned:</span> <span class="value">{{ ai.intendedSemesterAbroad ? "yes" : "no" }}</span></div>
+            	<div class="detail"><span class="key">If yes, when:</span> <span class="value">{{ ai.timeframeSemesterAbroad }}</span></div>
+            	<div class="detail"><span class="key">Staying for the next two semesters:</span> <span class="value">{{ ai.consecutiveSemestersPossible ? "yes" : "no" }}</span></div>
+            	<div class="detail"><span class="key">English level:</span> <span class="value">{{ ai.englishLevel }}</span></div>
+            	<div class="detail"><span class="key">Native Language:</span> <span class="value">{{ ai.nativeLanguage }}</span></div>
+            	<div class="detail"><span class="key">Previous experience:</span> <span class="value">{{ ai.practicalExperience }}</span></div>
+            	<br><span>About You and AIESEC</span>
+            	<div class="detail"><span class="key">What are you doing besides AIESEC:</span><span class="value">{{ ai.besidesAIESEC }}</span></div>
+            	<div class="detail"><span class="key">In which fields do you have expereinces:</span> <span class="value">{{ ai.areasOfExperience }}</span></div>
+            	<div class="detail"><span class="key">What have you done there:</span> <span class="value">{{ ai.detailsAreasOfExperience }}</span></div>
+            	<div class="detail"><span class="key">Computer Literacy:</span> <span class="value">{{ ai.computerLiteracy }}</span></div>
+            	<div class="detail"><span class="key">Description Computer Literacy:</span> <span class="value">{{ ai.detailsComputerLiteracy ? "yes" : "no" }}</span></div>
+            	<div class="detail"><span class="key">Motivation for Application:</span> <span class="value">{{ ai.applicationMotivation }}</span></div>
+            	<div class="detail"><span class="key">LinkedIn-Profile:</span> <a href="{{ ai.linkLinkedInOrCV }}">{{ ai.linkLinkedInOrCV }}</a></div>
+            	<div class="detail"><span class="key">Which competencies want to be gained:</span> <span class="value">{{ ai.competenciesToBeLearned }}</span></div>
+            	<div class="detail"><span class="key">Subprogram interested in:</span><span class="value">{{ ai.functionalAreaInterested }}</span></div>
+            	<div class="detail"><span class="key">Interested in a specific JD:</span><span class="value">{{ ai.concretePostion }}</span></div>
+            	<div class="detail"><span class="key">Which personal competencies want to be improved:</span> <span class="value">{{ ai.competenciesToBeImproved }}</span></div>
+            	<div class="detail"><span class="key">How much time do you want to spend for AIESEC(hours/week):</span> <span class="value">{{ ai.hoursToBeInvested }}</span></div>
+            	<div class="detail"><span class="key">Interested in going abroad:</span><span class="value">{{ ai.interestInInternship ? "yes" : "no" }}</span></div>
+            	<div class="detail"><span class="key">If yes, when:</span><span class="value">{{ ai.timeframeInternship }}</span></div>
+            	<div class="detail"><span class="key">How heard of AIESEC: </span> <span class="value">{{ ai.howHeard }}</span></div>
+            	<div class="detail"><span class="key">Comments: </span><span class="value">{{ ai.comment }}</span></div>
+            	<div class="detail"><span class="key">Newsletter:</span><span class="value">{{ pi.newsletterPermitted ? "yes" : "no"}}</span></div>
+         	</li>
+      	</ul>
+      	<span id="noEntry" ng-if="!ai.program"> No Applicationinformation available</span>
+   	</div>
+	</div>
+</template>
+
+<template id="app/content/people/edit/person.edit.applicationinformation.html" type="text/ng-template">
+  <ai-editing-modal>
+  <form>
+    <div class="fields">
+      <label>ApplicationInformation</label>
+      <div>Interested In Going Abroad: <input type="checkbox" ng-model="vm.interestInInternship"></div>
+      <div>If yes, when: <input type="text" ng-model="vm.timeframeInternship"></div>
+     <!-- <div>If yes, when: <input type="text" ng-model="vm.timeframeInternship" bs-datepicker="" data-model-date-format="yyyy-MM-dd" data-date-type="string" class="i-datepicker ng-pristine ng-untouched ng-valid"></div> Datepicker should be used when noob2 is implemented to filter planned IXP by a certain Date -->
+    </div>
+  </form>
+</ai-editing-modal>
+</template>
+
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob');
+
+    var main = function($rootScope, $stateParams, expa){
+    	$rootScope.pi = null;
+      $rootScope.ai = null;
+    	noob.get('people/' + $stateParams.id).then(function(data){
+    		$rootScope.pi = data;
+    		noob.get('people/' + $stateParams.id + '/applicationInformation').then(function(data){
+    			$rootScope.ai = data; //Applicationinformation
+          if ($rootScope.ai.program == 'ogv') {
+            $rootScope.ai.program = 'oGV';
+          }
+          else if ($rootScope.ai.program == 'oge') {
+            $rootScope.ai.program = 'oGE';
+            $rootScope.ai.earliestStartDate = expa.formatDate($rootScope.ai.earliestStartDate);
+          }
+          else if ($rootScope.ai.program == 'ogt') {
+            $rootScope.ai.program = 'oGT';
+            $rootScope.ai.earliestStartDate = expa.formatDate($rootScope.ai.earliestStartDate);
+            $rootScope.ai.latestStartDate = expa.formatDate($rootScope.ai.latestStartDate);
+
+            //map IDs of worldRegions to the names
+            var worldRegions = {
+              '1632': 'Afrika',
+              '1630': 'Asien',
+              '1629': 'Zentral- & Osteuropa',
+              '1627': 'Lateinamerika',
+              '1628': 'Mittlerer Osten & Nordafrika',
+              '1631': 'West Europa & Nordamerika'
+            }
+            $.each($rootScope.ai.worldRegions, function(index, worldRegionId){
+              $rootScope.ai.worldRegions[index] = worldRegions[worldRegionId];
+            });
+              $rootScope.ai.worldRegions = $rootScope.ai.worldRegions.join();
+          }
+          else if ($rootScope.ai.program == 'yt') {
+            $rootScope.ai.program = 'YT';
+          }
+
+          $rootScope.ai.howHeard = $rootScope.ai.howHeard.join();	
+    	});
+
+    });
+	}
+	tim.script.add({
+		name: 'applicationInformation',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/people\/[0-9]+',
+        script: main
+	});
+
+  var applicationInformationController = function($scope, $rootScope, $state, $stateParams, noob) {
+    $scope.$parent.$parent.vm.loading = false;
+
+    this.interestInInternship = $rootScope.ai ? $rootScope.ai.interestInInternship : false;
+    this.timeframeInternship = $rootScope.ai ? $rootScope.ai.timeframeInternship : "";
+
+    this.confirmMethod = function() {
+      noob.patch('people/' + $stateParams.id  + '/applicationInformation', {
+        'interestInInternship' : this.interestInInternship,
+        'timeframeInternship' : this.timeframeInternship
+      }).then($state.go.bind(this, 'person'));
+    };
+
+  };
+
+  tim.addState({
+      state: "person.edit.applicationInformation",
+      config: {
+          url: "/applicationinformation",
+          views: {
+              "edit@person": {
+                  templateUrl: "app/content/people/edit/person.edit.applicationinformation.html",
+                  controller: applicationInformationController,
+                  controllerAs: "vm"
+              }
+          }
+      }
+  });
+
+})(aigTim, jQuery);
+</script>

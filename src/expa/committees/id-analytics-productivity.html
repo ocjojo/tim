@@ -1,0 +1,368 @@
+<style>
+	#retention-input input {
+		width: auto;
+	}
+	.productivity-menu {
+		background: #eee;
+	}
+	.productivity-menu li {
+		display: inline-block;
+		padding: 15px 15px;
+		cursor: pointer;
+	}
+	.productivity-menu li:hover,
+	.productivity-menu li.active {
+		background: #ddd;
+	}
+	.analytics-productivity [colspan="2"]{
+		padding: 4px 20px;
+	}
+	.analytics-productivity input{
+		width: auto;
+	}
+	.analytics-productivity .recommendation {
+		margin-top: 20px;
+	}
+	.productivityCell {
+		border-right-width: thick;
+	}
+</style>
+<template type="text/ng-template" id="tim-analytics-productivity">
+	<div class="analytics-productivity">
+		<ul class="productivity-menu">
+			<li ng-click="tab('oGV')" ng-class="{active:activeProgram=='oGV'}">oGV
+			<li ng-click="tab('oGT')" ng-class="{active:activeProgram=='oGT'}">oGT
+			<li ng-click="tab('iGT')" ng-class="{active:activeProgram=='iGT'}">iGT
+			<li ng-click="tab('iGV')" ng-class="{active:activeProgram=='iGV'}">iGV
+		</ul>
+		<div>
+			<table>
+				<tr>
+					<td>{{activeProgram}}</td>
+					<td colspan="100%">
+						<input type="date" name="from" ng-model="from">
+						- <input type="date" name="to" ng-model="to">
+						<span ng-click="reload()" class="btn">reload</span>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="100%">
+						<span style="font-size:0.5rem;">Important: The table will always compare the timeframes you enter. (e.g. 05.03.17 - 15.04.17 will show 05.03.17-15.03.17 and 05.04.17-15.04.17)</span>
+					</td>
+				</tr>
+				<tr ng-if="isNational">
+                    <td class="productivityCell">LC</td>
+                    <td class="productivityCell" ng-repeat="row in table[0]" colspan="3">{{row.month}}</td>
+                </tr>
+                <tr ng-if="isNational">
+                	<td class="productivityCell"></td>
+                	<td ng-repeat-start="cell in table[0]">#Member</td>
+                    <td>#Matches</td>
+                    <td class="productivityCell" ng-repeat-end>#Productivity</td>
+                </tr>
+                <tr ng-if="isNational" ng-repeat="row in table">
+                	<td class="productivityCell">{{row[0].name}}</td>
+                    <td ng-repeat-start="cell in row">{{cell.member.length}}</td>
+                    <td>{{cell.matches}}</td>
+                    <td class="productivityCell" ng-repeat-end>{{cell.productivity}}</td>
+                </tr>
+
+				<tr ng-if="!isNational">
+					<td>Month</td>
+					<td># Member</td>
+					<td># Approves</td>
+					<td>Productivity</td>
+				</tr>
+				<tr ng-if="!isNational" ng-repeat="row in rows">
+					<td>{{row.month}}</td>
+					<td>{{row.member.length}}</td>
+					<td>{{row.matches}}</td>
+					<td>{{row.productivity}}</td>
+				</tr>
+			</table>
+		</div>
+		<div class="recommendation">
+			<table>
+				<tr>
+					<td colspan="4">{{activeProgram}} Tier Recommendation</td>
+				</tr>
+				<tr>
+					<td>Tier</td>
+					<td># Member</td>
+					<td># Approves</td>
+					<td>Productivity</td>
+				</tr>
+				<tr ng-repeat="tier in recommendation">
+					<td>{{tier.name}}</td>
+					<td>{{tier.member}}</td>
+					<td>{{tier.matches}}</td>
+					<td>{{tier.productivity}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+
+		var today = new Date(),
+			fromDate = new Date(today.getFullYear(), today.getMonth() - 2, 1),
+			toDate = new Date(today.getFullYear(), today.getMonth()+1, 0),
+			activeProgram = 'oGV';
+
+		var filter = {
+			oGV: {
+				'basic[type]':'person',
+				'programmes[]':'1'
+			},
+			oGT: {
+				'basic[type]':'person',
+				'programmes[]':'2'
+			},
+			iGT: {
+				'basic[type]':'opportunity',
+				'programmes[]':'2'
+			},
+			iGV: {
+				'basic[type]':'opportunity',
+				'programmes[]':'1'
+			}
+		};
+		var recommendation = {
+			oGV: {
+				tier5: {name:'Tier  5', member: '5-6', matches: '0-20', productivity: 3},
+				tier4: {name:'Tier  4', member: '8-12', matches: '21-50', productivity: 4},
+				tier3: {name:'Tier  3', member: '15-18', matches: '51-90', productivity: 5},
+				tier2: {name:'Tier  2', member: '24-30', matches: '91-162', productivity: 7},
+				tier1: {name:'Tier  1', member: '30-35', matches: '162+', productivity: 'over 9000' /*8+*/},
+			},
+			oGT: {
+				tier5: {name:'Tier 5', member: 5, matches: '0-7', productivity: 1.2},
+				tier4: {name:'Tier 4', member: 10, matches: '8-15', productivity: 1.5},
+				tier3: {name:'Tier 3', member: '10-15', matches: '16-25', productivity: 1.5},
+				tier2: {name:'Tier 2', member: '18-25', matches: '26-38', productivity: 1.5},
+				tier1: {name:'Tier 1', member: '25-30', matches: '38+', productivity: 1.5},
+			},
+			iGT: {
+				tier6: {name:'Tier 6', member: 5, matches: '0-7', productivity: 1.4},
+				tier5: {name:'Tier 5', member: 9, matches: '8-15', productivity: 1.6},
+				tier4: {name:'Tier 4', member: 13, matches: '16-22', productivity: 1.7},
+				tier3: {name:'Tier 3', member: 19, matches: '23-29', productivity: 1.5},
+				tier2: {name:'Tier 2', member: 24, matches: '30-49', productivity: 2},
+				tier1: {name:'Tier 1', member: 25, matches: '50+', productivity: '2+'},
+			},
+			iGV: {
+				tier5: {name:'Tier 5', member: '5-6', matches: '0-20', productivity: 3},
+				tier4: {name:'Tier 4', member: '8-12', matches: '21-50', productivity: 4},
+				tier3: {name:'Tier 3', member: '15-18', matches: '51-90', productivity: 5},
+				tier2: {name:'Tier 2', member: '24-30', matches: '91-162', productivity: 7},
+				tier1: {name:'Tier 1', member: '30-35', matches: '162+', productivity: '4.5+'},
+			}
+		};
+
+		var addMemberToBucketIfNotContained = function(bucket, jd){
+			if(bucket.member.indexOf(jd.memberId) < 0){ //add, if not already contained in bucket
+				bucket.member.push(jd.memberId);
+			}
+		};
+
+		var controller = function($scope, $stateParams, noob, expa, time) {
+
+			$scope.from = fromDate;
+			$scope.to = toDate;
+			$scope.activeProgram = activeProgram;
+			$scope.recommendation = recommendation.oGV;
+			$scope.rows = [];
+			$scope.table = [];
+			$scope.isNational;
+			var committees = {
+				'713': 'Aachen',
+				'686': 'Augsburg',
+				'1454': 'Bayreuth',
+				'680': 'Berlin HU',
+				'708': 'Berin TU',
+				'664': 'Bielefeld',
+				'1442': 'Bochum',
+				'693': 'Bonn',
+				'678': 'Braunschweig',
+				'665': 'Bremen',
+				'667': 'Darmstadt',
+				'677': 'Dresden',
+				'1448': 'Duesseldorf',
+				'657': 'Frankfurt',
+				'1420': 'Giessen-Marburg',
+				'1415': 'Goettingen',
+				'757': 'Halle',
+				'1523': 'Hamburg',
+				'1441': 'Hannover',
+				'699': 'Heidelberg',
+				'696': 'Jena',
+				'1533': 'Kaiserslautern',
+				'643': 'Karlsruhe',
+				'1438': 'Kiel',
+				'1421': 'Koeln',
+				'1410': 'Leipzig',
+				'1414': 'Lueneburg',
+				'1447': 'Magdeburg',
+				'60': 'Mainz-Wiesbaden',
+				'1520': 'Mannheim',
+				'1394': 'Muenchen',
+				'1484': 'Muenster',
+				'1440': 'Nuernberg',
+				'663': 'Paderborn',
+				'1403': 'Passau',
+				'648': 'Regensburg',
+				'647': 'Stuttgart',
+				'1443': 'Wuerzburg'
+			};
+
+			var validateDates = function() {
+				if(time.isDateInvalid($scope.from)) {
+					tim.popup('From Date is invalid');
+					return true;
+				}
+				if(time.isDateInvalid($scope.to)) {
+					tim.popup('To Date is invalid');
+					return true;
+				}
+				if(time.isDateLaterThan($scope.from, $scope.to)) {
+					tim.popup('Invalid! From Date is later than To Date');
+					return true;
+				}
+				if(time.isDateLaterThanToday($scope.to)) {
+					tim.popup('Invalid! To Date is later than Today');
+					return true;
+				}
+				if(time.isDateLaterThanToday($scope.from)) {
+					tim.popup('Invalid! From Date is later than Today');
+					return true;
+				}
+			}
+
+			var bucket = function(date1, date2) {
+				var diff = time.monthDiff(date1, date2);
+				return diff;
+			};
+
+			var processJds = function(data, id, name){
+				var dateTo = new Date($scope.to);
+				dateTo.setDate(dateTo.getDate() + 1);
+				var rows = [],
+					numberOfBuckets = bucket($scope.from, dateTo) + 1,
+					i, //for the loops
+					bucketMonth = new Date($scope.from);
+
+
+				for(i = 0; i < numberOfBuckets; i++) { //initialize empty bucks
+					rows[i] = {
+						month: time.monthName(bucketMonth.getMonth()) + ' ' + bucketMonth.getFullYear(),
+						member: [],
+						name: name,
+						matches: 0,
+						productivity: 0,
+						bucketMonth: bucketMonth //for internal use
+					};
+
+					bucketMonth = time.addMonths(bucketMonth, 1);
+				}
+
+				//process actual data
+				for(i in data.payload) {
+					var jd = data.payload[i];
+					//if bucket for startDate
+					var startBuck = bucket($scope.from, new Date(jd.startDate));
+					var endBuck = bucket($scope.from, new Date(jd.endDate));
+					for (var j = Math.max(startBuck, 0); j < Math.min(endBuck, numberOfBuckets); j++) {
+						addMemberToBucketIfNotContained(rows[j], jd);
+					}
+					if(jd.successorJd && endBuck >= 0 && endBuck < numberOfBuckets) rows[endBuck].resigned++;
+				}
+
+				for(i = 0; i < numberOfBuckets; i++) {
+					var from = new Date(rows[i].bucketMonth);
+					var to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
+					getAnalytics(rows, i, expa, id, $scope.activeProgram, from, to);
+				}
+
+				$scope.rows = rows.reverse();   //Used for Local View
+				$scope.table.push(rows.reverse());	//Used for National View
+			};
+
+			$scope.tab = function(program) {
+				if(program == $scope.activeProgram) return;
+
+				$scope.activeProgram = program;
+				$scope.recommendation = recommendation[program];
+				$scope.reload();
+			};
+
+			$scope.reload = function() {
+				if(validateDates()) return;
+				$scope.table = [];
+				createTable($scope.from, $scope.to);
+			};
+
+			var createTable = function(fromDate, toDate) {
+				var toDate = new Date(toDate);
+				toDate.setDate(toDate.getDate() + 1);
+				var filter = {
+				limit: 1000,
+				team: $scope.activeProgram,
+				// startDateFrom: fromDate,
+				startDateTo: toDate.toJSON()
+				};
+
+				if($stateParams.id == '1596') {			//National Overview
+					$scope.isNational = true;
+					$.each(committees, function(committeeId, committeeName) {
+						filter.committeeIds = [committeeId];
+						noob.get('jds', filter).then(function(jds) {
+							processJds(jds, committeeId, committeeName);
+						})
+					});
+				}
+				else {									//Local Overview
+					$scope.isNational = false;
+					filter.committeeIds = [$stateParams.id];
+					noob.get('jds', filter).then(function(jds) {
+							processJds(jds, $stateParams.id, expa.getCommitteeById($stateParams.id));
+						})
+				}
+			};
+
+			createTable($scope.from, $scope.to);
+		};
+
+
+		var getAnalytics = function(rows, index, expa, committeeId, program, from, to) {
+			var filters = $.extend({}, filter[program],{
+				'basic[home_office_id]' : committeeId,
+				'end_date' : expa.formatDate(to.toJSON()),
+				'start_date' : expa.formatDate(from.toJSON()),
+			});
+
+			return expa.get('applications/analyze.json', filters).done(function(data){
+				rows[index].matches = data.analytics.total_approvals.doc_count;
+				var productivity = rows[index].matches / rows[index].member.length;
+				rows[index].productivity = productivity.toFixed(3);
+			});
+		};
+
+		var newState = {
+			state: 'committee.analytics.productivity',
+            config: {
+                url: '/productivity',
+                views: {
+                	'analytics': {
+                		templateUrl: 'tim-analytics-productivity',
+                		controller: controller
+                	}
+                }
+            }
+		};
+
+		tim.addState(newState);
+
+	})(aigTim, jQuery);
+</script>

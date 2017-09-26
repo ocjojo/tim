@@ -1,0 +1,125 @@
+<style>
+	.block{
+		display: block;
+	}
+</style>
+
+<template id="applications-extra-dropdown-unbooked-whs">
+	<li>
+		<a ng-click="unbookedWhs()" class="archived status">Unbooked WHS</a>
+	</li>
+</template>
+
+<style>
+	table.fee td,
+	table.fee th,
+	table.ops td,
+	table.ops th{
+		padding:2px 4px
+	}
+</style>
+
+<template id="unbooked-whs-table">
+	<table id="unbooked_whs">
+		<tr>
+			<th>EP ID</th>
+			<th>Name</th>
+			<th>AGB Version</th>
+			<th>Booking Date</th>
+			<th>WHS Fee</th>
+		</tr>
+		<tr ng-repeat="person in persons" ng-if="person.feeBooked=='no'"> 
+			<td>{{person.id}}</td> 
+			<td><a href='{{person.url}}' target='_blank'>{{person.full_name}}</a></td> 
+			<td><a href='{{person.details.agbUrl}}' target='_blank'>{{person.details.agbImplementationDate}}</a></td> 
+			<td>
+				{{person.details.whsBookingDate}}
+			</td> 
+			<td>
+				<table class='fee'>
+					<tr>
+						<th>WHS Fee</th>
+						<th>Booked</th>
+					</tr>
+					<tr>
+					<td>{{person.details.whsFee}}</td>
+					<td>{{person.feeBooked}}</td></tr>
+				</table>
+			</td> 
+		</tr>
+	</table>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+	var noob = tim.helper.get('noob'),
+		expa = tim.helper.get('expa'),
+		persons = {};
+
+	var inifiniteScroll = function(data){
+		var applications = data.data;
+		var ids = [];
+		for(var i in applications) {
+			var person = applications[i].person;
+			persons[person.id] = person;
+			ids.push(person.id);
+		}
+		getData(ids);
+	};
+	var unbookedWhs = function() {
+		// expa.addInfiniteScroll({
+		// 	route: 'https://gis-api.aiesec.org/v2/applications.json',
+		// 	script: inifiniteScroll
+		// });
+		
+		//loop over people
+		var ids = [];
+		$("li[ng-repeat].application").each(function(i,el) {
+			var person = $(el).scope().application.person;
+			persons[person.id] = person;
+			ids.push(person.id);
+		}).remove();
+		if(!ids.length) return;
+		$("ul.list").empty();
+		var whsTable = tim.template.get('#unbooked-whs-table').compile().getDom();
+		whsTable.scope.persons = persons;
+		getData(ids, whsTable.scope);
+		$(whsTable)
+		.insertBefore('[infinite-scroll="vm.getMoreData()"]');
+		$(".no-results").hide();
+		$("body").height($(window).height()+150);
+	};
+	var getData = function(ids, scope) {
+		noob.get('reports/unbookedReintegrations', {
+			ids: ids
+		}).then(function(data){
+			for(var i in data){
+				var id = data[i].personId;
+				scope.persons[id].details = data[i];
+				insertTableRow(id, scope);
+			}
+		});
+	};
+	var insertTableRow = function(id, scope){
+		var person = scope.persons[id];
+		person.whsDate = person.details.opStartDate || person.details.opsOnlineBookingDate;
+		person.whsType = person.details.opType + " " + person.details.opLc;
+		person.feeBooked = person.details.whsFeeBooked != '0' ? "yes" : "no";
+	};
+
+	var controller = function(){
+		tim.find('.applications-extra-dropdown-actions').then(function(el){
+			var button = tim.template.get('#applications-extra-dropdown-unbooked-whs').compile();
+			$(button).appendTo(el);
+			button.scope.unbookedWhs = unbookedWhs;
+		});
+	};
+
+	tim.script.add({
+		name: 'unbooked WHS',
+		route: 'https://experience.aiesec.org/#/people/applications',
+		script: controller
+	});
+	
+})(aigTim, jQuery);
+</script>

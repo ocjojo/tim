@@ -1,0 +1,409 @@
+<style>
+	.table{
+		display: none;
+    position: absolute;
+    left: inherit;
+    z-index: 9999!important;
+    top: 37px;
+    text-align: right;
+    background: #fff;
+    border: 1px rgba(0,0,0,.15) solid;
+    border-radius: 4px;
+    box-shadow: 0 8px 15px rgba(0,0,0,.1);
+		width:100px;
+	}
+	.choose-table{
+		margin:5px;
+		width:90px;
+		text-align: center;
+
+	}
+	.follow-up-table {
+		color: #777;
+	}
+	.follow-up-table th {
+		font-weight: bold;
+		font-size: 9pt;
+	}
+	.follow-up-table tr {
+		font-size: 9pt;
+	}
+	.follow-up-button{
+		background: url(https://cdn-expa.aiesec.org/assets/images/icons/user.svg) top 14px left 12px no-repeat;
+		padding: 15px;
+		color: #3692e0;
+		display: block;
+		cursor:pointer;
+	}
+</style>
+<template id="dropdownFollowUp">
+	<li class="follow-up-button" style="padding-left: 30px!important;">Table View</li>
+	<ul class="dropdown-menu table">
+		<li>
+			<a style="padding:5px 10px;" class="programme all choose-table">All</a>
+		</li>
+		<li>
+			<a style="padding:5px 10px;" class="programme gv choose-table">GV</a>
+		</li>
+		<li>
+			<a style="padding:5px 10px;" class="programme gt choose-table">GT</a>
+		</li>
+		<li>
+			<a style="padding:5px 10px;" class="programme ge choose-table">GE</a>
+		</li>
+		<li>
+			<a style="padding:5px 10px;" class="programme tmp choose-table">Member</a>
+		</li>
+	</ul>
+</template>
+<template id="follow-up-table">
+<div class="table-wrapper">
+	<table class="follow-up-table">
+		<thead>
+			<tr>
+				<th>LC</th>
+				<th>Full Name</th>
+				<th>Application Date</th>
+				<th>Email</th>
+				<th>Phone</th>
+				<th>Field of Study</th>
+				<th>Lead Source</th>
+				<th>Program(s)</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr ng-repeat="person in data track by $index" class="application bookmarklet">
+				<td>{{ person.lc }}</td>
+				<td><a href="{{ person.profile_link }}">{{ person.full_name }}</a></td>
+				<td>{{ person.created_at }}</td>
+				<td>{{ person.email }}</td>
+				<td>{{ person.phone }}</td>
+				<td>{{ person.field_of_study }}</td>
+				<td>{{ person.lead_source }}</td>
+				<td class="programs">
+					<span ng-repeat="program in person.programmes"
+						class="programme {{ program.short_name }}">{{ program.short_name }}</span>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</div>
+</template>
+
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob'),
+		entries = [];
+
+	var getLeadSource = function(applicationInformation) {
+		if(applicationInformation.type == 'globalTalentApplicationInformation') return 'GT';
+		if(applicationInformation.type == 'globalCitizenApplicationInformation') return 'GV';
+		if(applicationInformation.type == 'youthTalentApplicationInformation') return 'Member';
+		return 'EXPA';
+	};
+
+	var addTable = function(){
+		var table = tim.template.get('#follow-up-table').compile();
+		table.scope.data = entries;
+ 		$(table).insertBefore('[infinite-scroll="vm.getMoreData()"]');
+ 		$("ul.list").empty();
+	};
+
+	var addEntry = function(program){
+		if(arguments[0][1] != 'success') return;
+
+		var person = arguments[0][0],
+			applicationInformation = arguments[1][0],
+			data = {
+				lc: person.home_lc.name,
+				profile_link: '/#/people/' + person.id,
+				full_name: person.full_name,
+				created_at: expa.formatDate(person.created_at),
+				email: person.email,
+				phone: '-',
+				lead_source: 'EXPA',
+				field_of_study : '-'
+			};
+		if(person.contact_info) data.phone = person.contact_info.phone;
+		if(arguments[1][1] == "success") {
+			data.field_of_study = applicationInformation.fieldOfStudy;
+			data.lead_source = getLeadSource(applicationInformation);
+		}
+		if(person.profile){
+			programmes = person.profile.selected_programmes_info;
+			var i = 0;
+			for(var program in programmes) {
+				programmes[i].short_name = programmes[i].short_name.toLowerCase();
+				i++;
+			}
+			data.programmes = person.profile.selected_programmes_info;
+
+		}
+		entries.push(data);
+	};
+
+	var addPeople = function(program,data) {
+		console.log(program,data);
+		//get program
+		if(program == "unset"){
+			program = $("#hiddenProgram")[0].innerText;
+		}
+		var people = data.data;
+		for(var i in people) {
+			var requests = [];
+			requests.push(
+				expa.get('people/' + people[i].id + '.json'));
+			requests.push(
+				noob.get('people/' + people[i].id + '/applicationInformation'));
+			if(program == "all"){
+				$.whenAll(requests).done(addEntry);
+			}
+			if(program == "gv"){
+				$.whenAll(requests).done(addEntryGV);
+			}
+			if(program == "gt"){
+				$.whenAll(requests).done(addEntryGT);
+			}
+			if(program == "ge"){
+				$.whenAll(requests).done(addEntryGE);
+			}
+			if(program == "tmp"){
+				$.whenAll(requests).done(addEntryTMP);
+			}
+		}
+	};
+
+	var addEntryGV = function(program){
+		if(arguments[0][1] != 'success') return;
+
+		var person = arguments[0][0],
+			applicationInformation = arguments[1][0],
+			data = {
+				lc: person.home_lc.name,
+				profile_link: '/#/people/' + person.id,
+				full_name: person.full_name,
+				created_at: expa.formatDate(person.created_at),
+				email: person.email,
+				phone: '-',
+				lead_source: 'EXPA',
+				field_of_study : '-'
+			};
+		if(person.contact_info) data.phone = person.contact_info.phone;
+		if(arguments[1][1] == "success") {
+			data.field_of_study = applicationInformation.fieldOfStudy;
+			data.lead_source = getLeadSource(applicationInformation);
+		}
+		if(person.profile){
+			programmes = person.profile.selected_programmes_info;
+			var i = 0;
+			for(var program in programmes) {
+				programmes[i].short_name = programmes[i].short_name.toLowerCase();
+				i++;
+			}
+			data.programmes = person.profile.selected_programmes_info;
+			program = checkPrograms(data.programmes, "gv");
+
+		}
+		if(program != true && data.lead_source != "GV"){
+		}
+		else{
+			entries.push(data);
+		}
+	};
+	var checkPrograms = function(programmes,program){
+		for(i in programmes){
+			if(program == "tmp"){
+				if(programmes[i].short_name == "tlp"){
+					return true;
+				}
+			}
+			if(programmes[i].short_name == program){
+				return true;
+			}
+		}
+	}
+	var addEntryGE = function(program){
+		if(arguments[0][1] != 'success') return;
+
+		var person = arguments[0][0],
+			applicationInformation = arguments[1][0],
+			data = {
+				lc: person.home_lc.name,
+				profile_link: '/#/people/' + person.id,
+				full_name: person.full_name,
+				created_at: expa.formatDate(person.created_at),
+				email: person.email,
+				phone: '-',
+				lead_source: 'EXPA',
+				field_of_study : '-'
+			};
+		if(person.contact_info) data.phone = person.contact_info.phone;
+		if(arguments[1][1] == "success") {
+			data.field_of_study = applicationInformation.fieldOfStudy;
+			data.lead_source = getLeadSource(applicationInformation);
+		}
+		if(person.profile){
+			programmes = person.profile.selected_programmes_info;
+			var i = 0;
+			for(var program in programmes) {
+				programmes[i].short_name = programmes[i].short_name.toLowerCase();
+				i++;
+			}
+			data.programmes = person.profile.selected_programmes_info;
+			program = checkPrograms(data.programmes, "ge");
+
+			}
+			if(program != true && data.lead_source != "GT"){
+			}
+			else{
+			entries.push(data);
+			}
+	};
+	var addEntryGT = function(program){
+		if(arguments[0][1] != 'success') return;
+
+		var person = arguments[0][0],
+			applicationInformation = arguments[1][0],
+			data = {
+				lc: person.home_lc.name,
+				profile_link: '/#/people/' + person.id,
+				full_name: person.full_name,
+				created_at: expa.formatDate(person.created_at),
+				email: person.email,
+				phone: '-',
+				lead_source: 'EXPA',
+				field_of_study : '-'
+			};
+		if(person.contact_info) data.phone = person.contact_info.phone;
+		if(arguments[1][1] == "success") {
+			data.field_of_study = applicationInformation.fieldOfStudy;
+			data.lead_source = getLeadSource(applicationInformation);
+		}
+		if(person.profile){
+			programmes = person.profile.selected_programmes_info;
+			var i = 0;
+			for(var program in programmes) {
+				programmes[i].short_name = programmes[i].short_name.toLowerCase();
+				i++;
+			}
+			data.programmes = person.profile.selected_programmes_info;
+			program = checkPrograms(data.programmes, "gt");
+
+			}
+			if(program != true && data.lead_source != "GT"){
+			}
+			else{
+			entries.push(data);
+			}
+	};
+	var addEntryTMP = function(program){
+		if(arguments[0][1] != 'success') return;
+
+		var person = arguments[0][0],
+			applicationInformation = arguments[1][0],
+			data = {
+				lc: person.home_lc.name,
+				profile_link: '/#/people/' + person.id,
+				full_name: person.full_name,
+				created_at: expa.formatDate(person.created_at),
+				email: person.email,
+				phone: '-',
+				lead_source: 'EXPA',
+				field_of_study : '-'
+			};
+		if(person.contact_info) data.phone = person.contact_info.phone;
+		if(arguments[1][1] == "success") {
+			data.field_of_study = applicationInformation.fieldOfStudy;
+			data.lead_source = getLeadSource(applicationInformation);
+		}
+		if(person.profile){
+			programmes = person.profile.selected_programmes_info;
+			var i = 0;
+			for(var program in programmes) {
+				programmes[i].short_name = programmes[i].short_name.toLowerCase();
+				i++;
+			}
+			data.programmes = person.profile.selected_programmes_info;
+			program = checkPrograms(data.programmes, "tmp");
+
+		}
+		if(program != true && data.lead_source != "Member"){
+		}
+		else{
+			entries.push(data);
+		}
+	};
+	var setProgram = function(program){
+		$("<div style='display:none;' id='hiddenProgram'>"+program+"</div>").appendTo($("body"));
+	}
+	var addButton = function(){
+		//initiate dropdown
+		var template = tim.template.get('#dropdownFollowUp').compile();
+		$(template).insertBefore($('.active').eq(1));
+		//show & hide dropdown
+		$(".follow-up-button")
+		.click(showDropdownTable);
+		//define buttons
+		$(".programme.all.choose-table")
+		.click(buildTableAll);
+		$(".programme.gv.choose-table")
+		.click(buildTableGV);
+		$(".programme.gt.choose-table")
+		.click(buildTableGT);
+		$(".programme.ge.choose-table")
+		.click(buildTableGE);
+		$(".programme.tmp.choose-table")
+		.click(buildTableTMP);
+
+	};
+	var buildTableAll = function(){
+		buildTable("all");
+		setProgram("all");
+	}
+	var buildTableGV = function(){
+		buildTable("gv");
+		setProgram("gv");
+	}
+	var buildTableGT = function(){
+		buildTable("gt");
+		setProgram("gt");
+	}
+	var buildTableGE = function(){
+		buildTable("ge");
+		setProgram("ge");
+	}
+	var buildTableTMP = function(){
+		buildTable("tmp");
+		setProgram("tmp");
+	}
+	var buildTable = function(program){
+		$(".follow-up-button").css("color",'#444');
+		addTable();
+		addPeople(program,{
+			data: angular.element($('ul.list')).scope().vm.people
+		});
+
+		expa.addInfiniteScroll({
+			route: 'https://gis-api.aiesec.org/v2/people.json',
+			script: addPeople.bind("unset","unset")
+		});
+	};
+
+	var showDropdownTable = function(){
+		var display = $(".dropdown-menu.table").css("display");
+		if(display == "none"){
+			$(".dropdown-menu.table").css({"display":"block"});
+		}
+		else{
+			$(".dropdown-menu.table").css({"display":"none"});
+		}
+	}
+	tim.script.add({
+		name: 'Follow Up Table',
+		route: 'https://experience.aiesec.org/#/people',
+		script: addButton
+	});
+
+})(aigTim, jQuery);
+</script>

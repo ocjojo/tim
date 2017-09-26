@@ -1,0 +1,107 @@
+<style>
+
+</style>
+<template id="analytics-appsbeta-ep-incoming">
+	<div class="wrapper thin aig-container">
+		<div class="analytics-header">
+			<div class="analytics-title">
+				<h1>EP Manager Approval Pending (incoming)</h1>
+			</div>
+			<div class="analytics-body-text">
+				<div class="statement">Showing all German opportunities where only the EP manager needs to approve</div>
+				</div>
+			</div>
+			<div class="analytics-appsbeta-ep-incoming-wrapper">
+	</div>
+	</div>
+</template>
+<template id="analytics-appsbeta-ep-incoming-tableheader">
+	<div class="analytics-results-header">
+		<table class="analytics-table">
+			<thead>
+				<tr>
+					<th class="table-result">Opportunity ID</th>
+					<th class="table-result">LC Name</th>
+					<th class="table-result">EP ID</th>
+					<th class="table-result">EP Name</th>
+				</tr>
+			</thead>
+			<tbody id="analytics-appsbeta-ep-incoming-body">
+
+			</tbody>
+		</table>
+	</div>
+</template>
+<template id="analytics-appsbeta-ep-incoming-results">
+	<tr>
+		<th class="table-result"><a href="https://experience.aiesec.org/#/opportunities/{{data[0].opportunityId}}">{{data[0].opportunityId}}</a></th>
+		<th class="table-result">{{data[0].office}}</th>
+		<th class="table-result">{{data[0].epId}}</th>
+		<th class="table-result">{{data[0].epName}}</th>
+	</tr>
+</template>
+<script type="text/javascript">
+
+	(function(tim, $){
+		var expa = tim.helper.get('expa'),
+			noob = tim.helper.get('noob');
+		function template() {
+			return tim.template.get('#analytics-appsbeta-ep-incoming').getDom().outerHTML;
+		};
+
+		var main = function (){
+			//build table
+			var template = tim.template.get('#analytics-appsbeta-ep-incoming-tableheader').compile();
+			$('.analytics-appsbeta-ep-incoming-wrapper').append($(template));
+			//grab data
+			var requests = [];
+			requests.push(
+							expa.get('applications.json', {
+								"filters[opportunity_home_mc]": [1596],
+								"filters[status]": "approved_tn_manager",
+								"per_page": 1000
+							}));
+			$.whenAll(requests).done(loadData);
+		};
+		var loadData = function(){
+				if(arguments[1] != 'success') return;
+				var applications = arguments[0];
+				for(var i in applications.data) {
+					var application = applications.data[i];
+					var appData = {
+						opportunityId: application.opportunity.id,
+						office: application.opportunity.office.name,
+						epId: application.person.id,
+						epName: application.person.full_name
+					};
+
+					var template = tim.template.get('#analytics-appsbeta-ep-incoming-results').compile();
+					var entries = [];
+					template.scope.data = entries;
+					$('#analytics-appsbeta-ep-incoming-body').append($(template));
+					entries.push(appData);
+				}
+		};
+
+		function controller($scope, $stateParams) {
+			main();
+		};
+
+		var newState = {
+			state: 'analytics-appsbeta-ep-incoming',
+			config: {
+				url: '/analytics/appsbeta/ep-manager-incoming/',
+				views: {
+					'root@': {
+						template: template,
+						controller: controller
+					}
+				}
+			}
+		};
+
+		aigTim.addState(newState);
+
+	})(aigTim, jQuery);
+
+</script>

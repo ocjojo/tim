@@ -1,0 +1,181 @@
+<style>
+.bookmark-row{
+	display: table-cell;
+  border-right: 1px #ddd solid;
+  border-bottom: 1px #ddd solid;
+}
+.bookmark-link{
+	color: #222;
+	font-size: 2rem;
+}
+.newTableEntry{
+	padding: 25px!important;
+	color: #222;
+	font-size: 2rem;
+}
+</style>
+<script>
+(function(tim, $){
+	var expa = tim.helper.get('expa'),
+		noob = tim.helper.get('noob'),
+        _parseDates;
+
+
+	var analytics_run = function(){
+		$(".suboffices-people").remove();
+		$(".suboffices-opportunity").remove();
+		$(".newTableEntry").remove();
+		$(".newHeader").remove();
+		//wait until the page is in place
+		tim.find('[ng-show="vm.analytics"]').then(function(analytics){
+			var scope = angular.element(analytics).scope();
+			tim.wait(scope.vm, "analytics").then(function(el){
+				$.when($(".analytics-filters-apply").append($('<a class="btn cancel suboffices-opportunity">Show Suboffices Opportunity</a>'))).then(function(el){
+					$(".suboffices-opportunity").bind("click",function(el){
+						var params = _parseDates.getCurrentParams(angular.element($('.btn.confirm')).scope().vm);
+						fillDataPerRow(params.start_date, params.end_date, getProgramm(params['programmes[]']),"opportunity");
+					});
+				});
+				$.when($(".analytics-filters-apply").append($('<a class="btn cancel suboffices-people">Show Suboffices EP</a>'))).then(function(el){
+					$(".suboffices-people").bind("click",function(el){
+						var params = _parseDates.getCurrentParams(angular.element($('.btn.confirm')).scope().vm);
+						fillDataPerRow(params.start_date, params.end_date, getProgramm(params['programmes[]']),"people");
+					});
+				});
+			});
+		});
+	}
+		var greta = function(){
+			var suboffices = arguments[0][0].suboffices;
+			if(suboffices.length == 0){
+				return;
+			}
+			var opportunityCommittee = arguments[1];
+			var personCommittee = arguments[2];
+			var dateFrom = arguments[3];
+			var dateTo = arguments[4];
+			var program = arguments[5];
+			var type = arguments[6];
+			for (var i = 0; i < suboffices.length; i++) {
+				var suboffice = suboffices[i].id;
+				var subofficeName = suboffices[i].name;
+				var requests = [];
+				if(type == "opportunity"){
+					requests.push(
+						expa.get("applications/analyze.json",{
+							"end_date":dateTo,
+							"entity_to_entity[opportunity_committee]":suboffice,
+							"entity_to_entity[person_committee]":personCommittee,
+							"programmes[]":[program],
+							"start_date":dateFrom
+						},false),
+						subofficeName
+					);
+				}
+				else{
+					requests.push(
+						expa.get("applications/analyze.json",{
+							"end_date":dateTo,
+							"entity_to_entity[opportunity_committee]":opportunityCommittee,
+							"entity_to_entity[person_committee]":suboffice,
+							"programmes[]":[program],
+							"start_date":dateFrom
+						},false),
+						subofficeName
+					);
+				}
+				$.whenAll(requests).done(sylvan);
+			}
+			$("table").toggleClass("tablesorter");
+			$(document).ajaxStop(function () {
+				$("table").tablesorter();
+			});
+		}
+		var sylvan = function(){
+			var suboffice = arguments[1];
+			var analytics = arguments[0][0].analytics;
+			var applications = analytics.total_applications.doc_count;
+			var accepted = analytics.total_matched.doc_count;
+			var approved = analytics.total_approvals.doc_count;
+			var realized = analytics.total_realized.doc_count;
+			var completed = analytics.total_completed.doc_count;
+			var line = '<tr><td class="newTableEntry">'+suboffice+'</td><td class="newTableEntry">'+applications+'</td><td class="newTableEntry">'+accepted+'</td><td class="newTableEntry">'+approved+'</td><td class="newTableEntry">'+realized+'</td><td class="newTableEntry">'+completed+'</td></tr>';
+			$(".analytics-table").find("table").find("tbody").append($(line));
+		}
+    function fillDataPerRow(dateFrom, dateTo, program,type) {
+			var opportunityCommittee = angular.element(jQuery('div.analytics-explainer')).scope().vm.analytics[0].committee.id;
+			var opportunityCommitteeName = angular.element(jQuery('div.analytics-explainer')).scope().vm.analytics[0].committee.name;
+			var personCommittee = angular.element(jQuery('div.analytics-explainer')).scope().vm.analytics[0].applicationsURL.split("person_committee=")[1].split("&")[0];
+			//get personCommitteeName
+			expa.get("committees/"+personCommittee+".json",{}).then(function(el){
+				var personCommitteeName = el.name;
+				if(type == "people"){
+					analyzeCommittee = personCommittee;
+					analyzeCommitteeName = personCommitteeName;
+				}
+				else {
+					analyzeCommittee = opportunityCommittee;
+					analyzeCommitteeName = opportunityCommitteeName;
+				}
+				if(program == 3){
+					alert("TMP/TLP does not make sense. Dummy!");
+					return;
+				}
+				//removing excess '<tr>'s
+				var trs = $("tr");
+				for (var i = 0; i < trs.length; i++) {
+					if(i == 0 || i == 1){
+					}
+					else{
+						trs[i].remove();
+					}
+				}
+				//add office name to table, but only if it does not exist, yet
+				if($(".newHeader").length == 0){
+					$(".analytics-table").find("table").find("thead").find("tr").prepend($('<th class="newHeader">Committee</th>'));
+					$(".analytics-table").find("table").find("tbody").find("tr").prepend($('<td class="newTableEntry">'+analyzeCommitteeName+'</td>'));
+				}
+				//get subcommittees of opportunity committees
+				var requests = [];
+				requests.push(
+					expa.get("committees/"+analyzeCommittee+".json",{},false),
+					opportunityCommittee,
+					personCommittee,
+					dateFrom,
+					dateTo,
+					program,
+					type
+				);
+				$.whenAll(requests).done(greta);
+			});
+
+
+    }
+
+
+
+
+
+    function getProgramm(program) {
+      return program[0];
+    }
+
+    var main = function(ParseDates){
+				//add table sorter
+				var server = "//bookmarks.aiesec.de/";
+		    var jsCode = document.createElement('script');
+		    jsCode.setAttribute('src', server+'v2/tablesorter.js');
+		    document.body.appendChild(jsCode);
+        _parseDates = ParseDates;
+				//add function to button
+				$(".confirm").click(analytics_run);
+    };
+
+	tim.script.add({
+		name: 'Analytics Opens',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/analytics\/e2e',
+		script: main
+	});
+
+})(aigTim, jQuery);
+</script>

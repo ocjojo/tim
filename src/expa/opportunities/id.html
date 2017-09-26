@@ -1,0 +1,51 @@
+<style>
+</style>
+
+<script>
+	(function(tim, $){
+
+		var main = function(expa, noob, scope, $stateParams){
+			
+			var saveNoobOpportunity = function(data){
+				var input = data;
+				noob.patch('opportunities/' + data.id, data).then(function(data){}, function(){		//second function for  request fail
+						noob.post('opportunities', input);
+				});
+			};
+
+			//listen to click on Open Opportunity button
+			scope.delayedGet('vm', '.profile-header-info')
+			.then(function(vm){
+				var _openOpportunity = vm.openOpportunity;		
+				var opportunity = vm.opportunity;
+				var id = $stateParams.id;
+				
+				var data = {
+					id : id,
+					hubspotId : null,
+					location : opportunity.location,
+					startDate : expa.formatDate(opportunity.earliest_start_date),
+					endDate : expa.formatDate(opportunity.latest_end_date),
+					companyName : opportunity.branch.name,
+					companyStreet : opportunity.branch.address_info.address_1,
+					zipCode : opportunity.branch.address_info.postcode,
+					city : opportunity.branch.address_info.city,
+					phone : opportunity.branch.organisation.contact_info.phone,
+					salary : opportunity.specifics_info.salary
+				};
+
+				vm.openOpportunity = function(){
+					saveNoobOpportunity(data);
+					_openOpportunity();
+				}
+			});
+		};
+
+		tim.script.add({
+		name: 'opportunity-in-noob',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/opportunities\/[0-9]+',
+		script: main
+	});
+
+	})(aigTim, jQuery);
+</script>

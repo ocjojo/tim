@@ -1,0 +1,52 @@
+<style>
+.data-security-statement {
+	font-size: 12px;
+	padding: 0 10px;
+}
+</style>
+
+<script>
+  (function(tim, $){
+    var expa = tim.helper.get('expa'),
+    noob = tim.helper.get('noob');
+
+    var main = function(){
+
+      var accepted = function(role, status){
+        if(role.secStatement) return;
+        role.secStatement = true;
+        var statement = '<span class="data-security-statement">Data Security Statement: ';
+        statement += status ? 'Accepted' : 'Not Accepted';
+        statement += '</span>';
+        $(role).find(".team-role-space").append(statement);
+      };
+
+    	var updateTeamTree = function() {
+	      	tim.find('.team-role').then(function(teamRole){
+
+		        $('.team-role').each(function(index, roleEl){
+		            var role = angular.element($(roleEl)).scope().$parent.role;
+		            noob.get('jds/' + role.id).then(function(data){ // if found on noob
+		            	accepted(roleEl, data.dataSecuritySigned);
+		            }, function(){ //if not found on noob
+                  accepted(roleEl, false);
+                });
+		        });
+
+			 });
+		};
+		expa.addAjaxListener({
+			route: 'https://gis-api.aiesec.org/v2/teams/([0-9]*)/positions.json.*',
+			script: tim.debounce(updateTeamTree),
+			statusCode: 200
+		});
+    };
+
+    tim.script.add({
+      name: 'DataSecurityStatementSIgend_in_Teamoverview',
+      route: 'https://experience.aiesec.org/#/committees/(.*)/teams',
+      script: main
+    });
+
+  })(aigTim, jQuery);
+</script>

@@ -1,0 +1,59 @@
+<style>
+</style>
+
+<script>
+	(function(tim, $){
+
+		var main = function(noob, expa, scope, $stateParams){
+			
+			var matchNoob = function(data){
+				noob.post('opportunities/' + $stateParams.id + '/matches', data);
+			}; 
+
+			scope.delayedGet('vm', '.application-actions')
+			.then(function(vm){
+				var personInformation = vm.activeApp.person;
+				var person = {
+					id : personInformation.id,
+					email : personInformation.email,
+					dateOfBirth :  expa.formatDate(personInformation.dob),
+					firstName : personInformation.first_name,
+					lastName : personInformation.last_name,
+					gender : personInformation.gender,
+					nationality : personInformation.home_lc.country
+				}
+				var exchange = {
+					applicationID : vm.activeApp.id
+				}
+				var applicationInformation = {
+					type : "globalCitizenApplicationInformation"
+				}
+
+				var data = {
+					person,
+					exchange,
+					applicationInformation
+				}
+
+				//listen to click on Approve Button
+				scope.delayedGet('vm', '.popup-content').then(function(vm){
+					var _doAction = vm.doAction;
+					vm.doAction = function () {
+						if(vm.action == "approve") {
+							matchNoob(data);
+						}
+						_doAction();
+					}
+				});
+			});
+
+		}; 
+
+		tim.script.add({
+		name: 'match-people-in-noob',
+		route: 'https:\/\/experience\.aiesec\.org\/#\/opportunities\/[0-9]+\/applications',
+		script: main
+	});
+
+	})(aigTim, jQuery);
+</script>

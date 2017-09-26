@@ -1,0 +1,141 @@
+<style>
+	.block{
+		display: block;
+	}
+</style>
+
+<template id="applications-extra-dropdown-unbooked-matches">
+	<li>
+		<a ng-click="unbookedMatches()" class="archived status">Unbooked Matches</a>
+	</li>
+</template>
+
+<style>
+	table.fee td,
+	table.fee th,
+	table.ops td,
+	table.ops th{
+		padding:2px 4px
+	}
+</style>
+
+<template id="unbooked-matches-table">
+	<table id="unbooked_matches">
+		<tr>
+			<th>EP ID</th>
+			<th>Name</th>
+			<th>AGB Version</th>
+			<th>Match Date</th>
+			<th>Match Fee</th>
+		</tr>
+		<tr ng-repeat="person in persons" ng-if="person.feeBooked=='no'"> 
+			<td>{{person.id}}</td> 
+			<td><a href='{{person.url}}' target='_blank'>{{person.full_name}}</a></td> 
+			<td><a href='{{person.details.agbUrl}}' target='_blank'>{{person.details.agbImplementationDate}}</a></td> 
+			<td>
+				{{person.matchDate}}
+			</td> 
+			<td>
+				<table class='fee'>
+					<tr>
+						<th>Match Fee</th>
+						<th>Booked</th>
+					</tr>
+					<tr>
+					<td>{{person.details.amountOfMatchingFee}}</td>
+					<td>{{person.details.matchingFeeBooked}}</td></tr>
+				</table>
+			</td> 
+		</tr>
+	</table>
+</template>
+
+<script type="text/javascript">
+	(function(tim, $){
+	var noob = tim.helper.get('noob'),
+		expa = tim.helper.get('expa'),
+		persons = {};
+
+	var inifiniteScroll = function(data){
+		var applications = data.data;
+		var ids = [];
+		for(var i in applications) {
+			var person = applications[i].person;
+			persons[person.id] = person;
+			ids.push(person.id);
+		}
+		getData(ids);
+	};
+	var unbookedMatches = function() {
+		// expa.addInfiniteScroll({
+		// 	route: 'https://gis-api.aiesec.org/v2/applications.json',
+		// 	script: inifiniteScroll
+		// });
+		
+		//loop over people
+		var ids = [];
+		$("li[ng-repeat].application").each(function(i,el) {
+			var person = $(el).scope().application.person;
+			persons[person.id] = person;
+			ids.push(person.id);
+		}).remove();
+		if(!ids.length) return;
+		$("ul.list").empty();
+		var matchTable = tim.template.get('#unbooked-matches-table').compile().getDom();
+		matchTable.scope.persons = persons;
+		getData(ids, matchTable.scope);
+		$(matchTable)
+		.insertBefore('[infinite-scroll="vm.getMoreData()"]');
+		$(".no-results").hide();
+		$("body").height($(window).height()+150);
+	};
+	var getData = function(ids, scope) {
+		noob.get('reports/unbookedMatches', {
+			ids: ids
+		}).then(function(data){
+			for(var i in data){
+				var id = data[i].personId;
+				scope.persons[id].details = data[i];
+				insertTableRow(id, scope);
+			}
+		});
+	};
+	var insertTableRow = function(id, scope){
+		var person = scope.persons[id];
+		var application = person.application;
+		person.feeBooked = person.details.matchingFeeBooked != '0' ? "yes" : "no";
+		var ma = new Date(application.an_signed_at);
+		if((application.current_status == "approved" ||
+			application.current_status == 'realized') && 
+			application.matched_or_rejected_at !== null && 
+			application.an_signed_at !== null && 
+			application.meta.date_approved !== null) {
+			if(ma < new Date(application.meta.date_approved)){
+				ma = new Date(application.meta.date_approved);
+			}
+			if(ma < new Date(application.matched_or_rejected_at)){
+				ma = new Date(application.matched_or_rejected_at);
+			}
+			person.matchDate = ma;
+		} else {
+			1269454
+			return;
+		}
+	};
+
+	var controller = function(){
+		tim.find('.applications-extra-dropdown-actions').then(function(el){
+			var button = tim.template.get('#applications-extra-dropdown-unbooked-matches').compile();
+			$(button).appendTo(el);
+			button.scope.unbookedMatches = unbookedMatches;
+		});
+	};
+
+	tim.script.add({
+		name: 'unbooked Matches',
+		route: 'https://experience.aiesec.org/#/people/applications',
+		script: controller
+	});
+	
+})(aigTim, jQuery);
+</script>
